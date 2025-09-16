@@ -3,14 +3,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, LogIn } from 'lucide-react';
 import schoolLogo from '@/assets/school-logo.png';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Login() {
-  const [userType, setUserType] = useState('');
   const [credentials, setCredentials] = useState({
     username: '',
     password: ''
@@ -18,25 +17,31 @@ export default function Login() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const detectUserRole = (username: string) => {
+    // Auto-detect role based on ID format
+    if (username.startsWith('STU')) return 'student';
+    if (username.startsWith('TCH')) return 'teacher';
+    if (username.startsWith('PAR')) return 'parent';
+    if (username.startsWith('ADM')) return 'admin';
+    if (username.startsWith('EXM')) return 'exams-officer';
+    if (username.startsWith('ADO')) return 'admission-officer';
+    if (username.startsWith('FIN')) return 'finance-officer';
+    if (username.startsWith('MED')) return 'media-officer';
+    return 'student'; // default
+  };
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!userType) {
-      toast({
-        title: "Please select user type",
-        description: "You must select whether you're a student, teacher, parent, or staff member.",
-        variant: "destructive"
-      });
-      return;
-    }
+    const userType = detectUserRole(credentials.username);
 
     // Demo login - redirect to appropriate dashboard
     toast({
       title: "Login Successful!",
-      description: `Welcome to your ${userType} dashboard.`,
+      description: `Welcome to your dashboard.`,
     });
 
-    // Redirect based on user type
+    // Redirect based on detected user type
     const dashboardRoutes = {
       student: '/dashboard/student',
       teacher: '/dashboard/teacher',
@@ -80,34 +85,18 @@ export default function Login() {
           <CardContent className="space-y-6">
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="userType">Login As</Label>
-                <Select value={userType} onValueChange={setUserType} required>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select user type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="student">Student</SelectItem>
-                    <SelectItem value="teacher">Teacher</SelectItem>
-                    <SelectItem value="parent">Parent</SelectItem>
-                    <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="exams-officer">Exams Officer</SelectItem>
-                    <SelectItem value="admission-officer">Admission Officer</SelectItem>
-                    <SelectItem value="finance-officer">Finance Officer</SelectItem>
-                    <SelectItem value="media-officer">Media Officer</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
                 <Label htmlFor="username">Username / ID Number</Label>
                 <Input
                   id="username"
                   type="text"
-                  placeholder="Enter your username or ID"
+                  placeholder="Enter your username or ID (e.g., STU001, TCH001, PAR001)"
                   value={credentials.username}
                   onChange={(e) => setCredentials({...credentials, username: e.target.value})}
                   required
                 />
+                <p className="text-xs text-muted-foreground">
+                  Your role will be detected automatically based on your ID
+                </p>
               </div>
 
               <div className="space-y-2">

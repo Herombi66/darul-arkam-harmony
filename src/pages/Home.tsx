@@ -101,6 +101,9 @@ export default function Home() {
             <Button asChild variant="secondary" size="xl">
               <Link to="/login">Student Portal</Link>
             </Button>
+            <Button asChild variant="warning" size="xl" className="font-bold">
+              <Link to="/admission">Apply Now!</Link>
+            </Button>
             <Button asChild variant="outline" size="xl" className="bg-white/10 border-white text-white hover:bg-white hover:text-primary">
               <Link to="/about">Learn More</Link>
             </Button>
