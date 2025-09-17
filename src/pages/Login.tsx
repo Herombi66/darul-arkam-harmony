@@ -89,14 +89,14 @@ export default function Login() {
                 <Input
                   id="username"
                   type="text"
-                  placeholder="Enter your username or ID (e.g., STU001, TCH001, PAR001)"
+                  placeholder="Enter your email or ID Number"
                   value={credentials.username}
                   onChange={(e) => setCredentials({...credentials, username: e.target.value})}
                   required
                 />
-                <p className="text-xs text-muted-foreground">
+                {/* <p className="text-xs text-muted-foreground">
                   Your role will be detected automatically based on your ID
-                </p>
+                </p> */}
               </div>
 
               <div className="space-y-2">
