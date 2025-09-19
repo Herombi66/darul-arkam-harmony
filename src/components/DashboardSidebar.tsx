@@ -164,119 +164,120 @@ export default function DashboardSidebar({ userType }: DashboardSidebarProps) {
   };
 
   return (
-    <div className={cn(
-      "bg-primary text-primary-foreground transition-all duration-300 flex flex-col",
-      isCollapsed ? "w-16" : "w-64"
-    )}>
-      {/* Header */}
-      <div className="p-4 border-b border-primary-foreground/20">
-        <div className="flex items-center justify-between">
-          <div className={cn("flex items-center space-x-3", isCollapsed && "justify-center")}>
-            <img src={schoolLogo} alt="School Logo" className="h-8 w-8" />
-            {!isCollapsed && (
+    <>
+      <div className={cn(
+        "bg-primary text-primary-foreground transition-all duration-300 flex flex-col relative",
+        isCollapsed ? "w-0 overflow-hidden" : "w-64"
+      )}>
+        {/* Header */}
+        <div className="p-4 border-b border-primary-foreground/20">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <img src={schoolLogo} alt="School Logo" className="h-8 w-8" />
               <div>
                 <h2 className="font-bold text-sm">Darul Arqam Academy</h2>
                 <p className="text-xs text-primary-foreground/70">Gombe State</p>
               </div>
-            )}
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="text-primary-foreground hover:bg-primary-foreground/10"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="text-primary-foreground hover:bg-primary-foreground/10"
-          >
-            {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-          </Button>
         </div>
-      </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-4">
-        <div className="space-y-1 px-2">
-          {items.map((item, index) => {
-            const hasChildren = 'children' in item && item.children;
-            return (
-              <div key={index}>
-                {hasChildren ? (
-                  <button
-                    onClick={() => toggleExpanded(item.href)}
-                    className={cn(
-                      "flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors w-full",
-                      "hover:bg-primary-foreground/10",
-                      isActive(item.href) && "bg-primary-foreground/20 text-white",
-                      isCollapsed && "justify-center"
-                    )}
-                  >
-                    <item.icon className={cn("h-5 w-5", !isCollapsed && "mr-3")} />
-                    {!isCollapsed && (
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto py-4">
+          <div className="space-y-1 px-2">
+            {items.map((item, index) => {
+              const hasChildren = 'children' in item && item.children;
+              return (
+                <div key={index}>
+                  {hasChildren ? (
+                    <button
+                      onClick={() => toggleExpanded(item.href)}
+                      className={cn(
+                        "flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors w-full",
+                        "hover:bg-primary-foreground/10",
+                        isActive(item.href) && "bg-primary-foreground/20 text-white"
+                      )}
+                    >
+                      <item.icon className="h-5 w-5 mr-3" />
                       <span className="flex-1 text-left">{item.label}</span>
-                    )}
-                    {!isCollapsed && (
                       <ChevronRight className={cn(
                         "h-4 w-4 transition-transform",
                         isExpanded(item.href) && "rotate-90"
                       )} />
-                    )}
-                  </button>
-                ) : (
-                  <Link
-                    to={item.href}
-                    className={cn(
-                      "flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                      "hover:bg-primary-foreground/10",
-                      isActive(item.href) && "bg-primary-foreground/20 text-white",
-                      isCollapsed && "justify-center"
-                    )}
-                  >
-                    <item.icon className={cn("h-5 w-5", !isCollapsed && "mr-3")} />
-                    {!isCollapsed && (
+                    </button>
+                  ) : (
+                    <Link
+                      to={item.href}
+                      className={cn(
+                        "flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                        "hover:bg-primary-foreground/10",
+                        isActive(item.href) && "bg-primary-foreground/20 text-white"
+                      )}
+                    >
+                      <item.icon className="h-5 w-5 mr-3" />
                       <span className="flex-1">{item.label}</span>
-                    )}
-                  </Link>
-                )}
+                    </Link>
+                  )}
 
-                {/* Sub-items */}
-                {!isCollapsed && hasChildren && isExpanded(item.href) && (
-                  <div className="ml-6 mt-1 space-y-1">
-                    {(item as SidebarItem & { children: SidebarItem[] }).children.map((child, childIndex) => (
-                      <Link
-                        key={childIndex}
-                        to={child.href}
-                        className={cn(
-                          "flex items-center px-3 py-2 rounded-lg text-sm transition-colors",
-                          "hover:bg-primary-foreground/10",
-                          isActive(child.href) && "bg-primary-foreground/20 text-white"
-                        )}
-                      >
-                        <child.icon className="h-4 w-4 mr-3" />
-                        <span>{child.label}</span>
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                  {/* Sub-items */}
+                  {hasChildren && isExpanded(item.href) && (
+                    <div className="ml-6 mt-1 space-y-1">
+                      {(item as SidebarItem & { children: SidebarItem[] }).children.map((child, childIndex) => (
+                        <Link
+                          key={childIndex}
+                          to={child.href}
+                          className={cn(
+                            "flex items-center px-3 py-2 rounded-lg text-sm transition-colors",
+                            "hover:bg-primary-foreground/10",
+                            isActive(child.href) && "bg-primary-foreground/20 text-white"
+                          )}
+                        >
+                          <child.icon className="h-4 w-4 mr-3" />
+                          <span>{child.label}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </nav>
+
+        {/* Logout */}
+        <div className="p-4 border-t border-primary-foreground/20">
+          <Button
+            variant="ghost"
+            className="w-full text-primary-foreground hover:bg-primary-foreground/10"
+            asChild
+          >
+            <Link to="/login">
+              <LogOut className="h-4 w-4 mr-2" />
+              Logout
+            </Link>
+          </Button>
         </div>
-      </nav>
-
-      {/* Logout */}
-      <div className="p-4 border-t border-primary-foreground/20">
-        <Button
-          variant="ghost"
-          className={cn(
-            "w-full text-primary-foreground hover:bg-primary-foreground/10",
-            isCollapsed && "px-2"
-          )}
-          asChild
-        >
-          <Link to="/login">
-            <LogOut className={cn("h-4 w-4", !isCollapsed && "mr-2")} />
-            {!isCollapsed && "Logout"}
-          </Link>
-        </Button>
       </div>
-    </div>
+      
+      {/* Floating toggle button when collapsed */}
+      {isCollapsed && (
+        <Button
+          variant="default"
+          size="icon"
+          onClick={() => setIsCollapsed(false)}
+          className="fixed top-4 left-4 z-50 bg-primary hover:bg-primary/90 shadow-lg"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      )}
+    </>
   );
 }
