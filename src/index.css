@@ -176,4 +176,6 @@ All colors MUST be HSL.
   .hover-glow {
     @apply transition-smooth hover:shadow-glow;
   }
+
 }
+

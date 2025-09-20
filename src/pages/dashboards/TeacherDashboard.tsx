@@ -1,11 +1,12 @@
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { 
-  BookOpen, 
-  Users, 
-  Clock, 
-  GraduationCap, 
+import {
+  BookOpen,
+  Users,
+  Clock,
+  GraduationCap,
   CalendarDays,
   TrendingUp,
   Award,
@@ -24,6 +25,18 @@ export default function TeacherDashboard() {
     pendingAssignments: 8,
     todayClasses: 4
   };
+
+  const [subjects, setSubjects] = useState(teacherData.subjects);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    // Simulate loading delay for consistency
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   const quickActions = [
     {
@@ -80,7 +93,7 @@ export default function TeacherDashboard() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Subjects Teaching</p>
-                    <p className="text-2xl font-bold text-primary">{teacherData.subjects.length}</p>
+                    <p className="text-2xl font-bold text-primary">{subjects.length}</p>
                   </div>
                 </div>
               </CardContent>
@@ -165,14 +178,22 @@ export default function TeacherDashboard() {
                   <CardTitle className="text-primary">Teaching Subjects</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 gap-4">
-                    {teacherData.subjects.map((subject, index) => (
-                      <div key={index} className="p-4 bg-gradient-primary rounded-lg text-white">
-                        <h3 className="font-semibold">{subject}</h3>
-                        <p className="text-sm opacity-90">Multiple Classes</p>
-                      </div>
-                    ))}
-                  </div>
+                  {loading ? (
+                    <div className="text-center py-4">Loading subjects...</div>
+                  ) : error ? (
+                    <div className="text-center py-4 text-red-600">Error: {error}</div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-4">
+                      {subjects.map((subject, index) => (
+                        <Link key={index} to={`/dashboard/teacher/subjects/${subject}`}>
+                          <div className="p-4 bg-gradient-primary rounded-lg text-white hover:opacity-90 transition-opacity cursor-pointer">
+                            <h3 className="font-semibold">{subject}</h3>
+                            <p className="text-sm opacity-90">Multiple Classes</p>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>

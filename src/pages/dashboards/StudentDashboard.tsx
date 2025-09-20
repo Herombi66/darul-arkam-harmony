@@ -1,14 +1,19 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Link } from 'react-router-dom';
-import { 
-  BookOpen, 
-  CreditCard, 
-  Clock, 
-  GraduationCap, 
+import {
+  BookOpen,
+  CreditCard,
+  Clock,
+  GraduationCap,
   CalendarDays,
   TrendingUp,
-  Award
+  Award,
+  Mail,
+  Phone,
+  MapPin,
+  Calendar
 } from 'lucide-react';
 import DashboardSidebar from '@/components/DashboardSidebar';
 
@@ -17,6 +22,15 @@ export default function StudentDashboard() {
     name: "Ahmad Musa",
     class: "SS3 A",
     rollNumber: "STU/2024/001",
+    avatar: "/placeholder.svg", // Placeholder for student photo
+    email: "ahmad.musa@darularkam.edu.ng",
+    phone: "+234 801 234 5678",
+    address: "123 Harmony Street, Lagos, Nigeria",
+    dateOfBirth: "2008-05-15",
+    gender: "Male",
+    admissionDate: "2020-09-01",
+    guardianName: "Hassan Musa",
+    guardianPhone: "+234 802 345 6789",
     pendingAssignments: 3,
     averageScore: 88.5,
     classRank: 2,
@@ -60,13 +74,44 @@ export default function StudentDashboard() {
       
       <main className="flex-1 overflow-auto">
         <div className="p-6 space-y-6">
-          {/* Welcome Header */}
-          <div className="animate-fade-in">
-            <h1 className="text-3xl font-bold text-primary">Welcome back, {studentData.name}!</h1>
-            <p className="text-muted-foreground">
-              {studentData.class} • Roll No: {studentData.rollNumber}
-            </p>
-          </div>
+          {/* Student Profile */}
+          <Card className="border-0 shadow-elevation animate-fade-in">
+            <CardContent className="p-6">
+              <div className="flex items-center space-x-6">
+                <Avatar className="h-20 w-20">
+                  <AvatarImage src={studentData.avatar} alt={studentData.name} />
+                  <AvatarFallback className="text-lg">{studentData.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <h1 className="text-2xl font-bold text-primary">{studentData.name}</h1>
+                  <p className="text-muted-foreground mb-2">
+                    {studentData.class} • Roll No: {studentData.rollNumber}
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div className="flex items-center space-x-2">
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      <span>{studentData.email}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Phone className="h-4 w-4 text-muted-foreground" />
+                      <span>{studentData.phone}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                      <span>{studentData.address}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <span>DOB: {new Date(studentData.dateOfBirth).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm">
+                  Edit Profile
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Stats Cards */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 animate-slide-up">

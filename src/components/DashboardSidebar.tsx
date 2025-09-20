@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  User, 
-  BookOpen, 
-  CreditCard, 
-  Calendar, 
-  MessageSquare, 
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import {
+  LayoutDashboard,
+  User,
+  BookOpen,
+  CreditCard,
+  Calendar,
+  MessageSquare,
   HelpCircle,
   ChevronLeft,
   ChevronRight,
@@ -15,11 +15,13 @@ import {
   Users,
   FileText,
   Clock,
-  CalendarDays
+  CalendarDays,
+  Grid3X3
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import schoolLogo from '@/assets/school-logo.png';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface SidebarItem {
   icon: any;
@@ -71,12 +73,20 @@ const sidebarItems = {
   teacher: [
     { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard/teacher' },
     { icon: User, label: 'Profile', href: '/dashboard/teacher/profile' },
-    { icon: BookOpen, label: 'Academics', href: '/dashboard/teacher/academics' },
+    {
+      icon: BookOpen,
+      label: 'Academics',
+      href: '/dashboard/teacher/academics',
+      children: [
+        { icon: BookOpen, label: 'Subjects', href: '/dashboard/teacher/subjects' },
+        { icon: Users, label: 'Classes', href: '/dashboard/teacher/classes' },
+        { icon: FileText, label: 'Assignments', href: '/dashboard/teacher/assignments' },
+        { icon: Clock, label: 'Attendance', href: '/dashboard/teacher/attendance' },
+        { icon: FileText, label: 'Record Sheet', href: '/dashboard/teacher/record-sheet' },
+      ]
+    },
     { icon: CalendarDays, label: 'Events', href: '/dashboard/teacher/events' },
-    { icon: FileText, label: 'Assignments', href: '/dashboard/teacher/assignments' },
-    { icon: Users, label: 'Classes', href: '/dashboard/teacher/classes' },
-    { icon: BookOpen, label: 'Subjects', href: '/dashboard/teacher/subjects' },
-    { icon: Clock, label: 'Attendance', href: '/dashboard/teacher/attendance' },
+    { icon: MessageSquare, label: 'Messages', href: '/dashboard/teacher/messages' },
     { icon: HelpCircle, label: 'Support', href: '/dashboard/teacher/support' },
   ],
   parent: [
@@ -144,6 +154,8 @@ export default function DashboardSidebar({ userType }: DashboardSidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { logout, user } = useAuth();
 
   const items = sidebarItems[userType] || sidebarItems.student;
 
@@ -252,17 +264,67 @@ export default function DashboardSidebar({ userType }: DashboardSidebarProps) {
           </div>
         </nav>
 
+        {/* Quick Stats & Actions for Admin */}
+        {userType === 'admin' && (
+          <div className="p-4 border-t border-primary-foreground/20 space-y-4">
+            {/* Quick Stats */}
+            <div className="space-y-2">
+              <p className="text-xs text-primary-foreground/70 font-medium">System Overview</p>
+              <div className="grid grid-cols-2 gap-2 text-center">
+                <div className="bg-primary-foreground/10 rounded p-2">
+                  <div className="text-lg font-bold text-primary-foreground">1.2K</div>
+                  <div className="text-xs text-primary-foreground/70">Users</div>
+                </div>
+                <div className="bg-primary-foreground/10 rounded p-2">
+                  <div className="text-lg font-bold text-primary-foreground">99.8%</div>
+                  <div className="text-xs text-primary-foreground/70">Uptime</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="space-y-2">
+              <p className="text-xs text-primary-foreground/70 font-medium">Quick Access</p>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-primary-foreground hover:bg-primary-foreground/10 h-8 text-xs"
+                  asChild
+                >
+                  <Link to="/dashboard/admin/profile">
+                    <User className="h-3 w-3 mr-1" />
+                    Profile
+                  </Link>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-primary-foreground hover:bg-primary-foreground/10 h-8 text-xs"
+                  asChild
+                >
+                  <Link to="/dashboard/admin/users">
+                    <Users className="h-3 w-3 mr-1" />
+                    Users
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Logout */}
         <div className="p-4 border-t border-primary-foreground/20">
           <Button
             variant="ghost"
             className="w-full text-primary-foreground hover:bg-primary-foreground/10"
-            asChild
+            onClick={() => {
+              logout();
+              navigate('/login');
+            }}
           >
-            <Link to="/login">
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout
-            </Link>
+            <LogOut className="h-4 w-4 mr-2" />
+            Logout
           </Button>
         </div>
       </div>

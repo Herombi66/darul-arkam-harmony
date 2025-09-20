@@ -8,6 +8,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, LogIn } from 'lucide-react';
 import schoolLogo from '@/assets/school-logo.png';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Login() {
   const [credentials, setCredentials] = useState({
@@ -16,6 +17,7 @@ export default function Login() {
   });
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { login } = useAuth();
 
   const detectUserRole = (username: string) => {
     // Auto-detect role based on ID format
@@ -32,10 +34,25 @@ export default function Login() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const userType = detectUserRole(credentials.username);
 
-    // Demo login - redirect to appropriate dashboard
+    // Mock user data based on role
+    const mockUser = {
+      id: credentials.username,
+      firstName: userType === 'teacher' ? 'Fatima' : 'Ahmad',
+      lastName: userType === 'teacher' ? 'Hassan' : 'Musa',
+      email: `${credentials.username.toLowerCase()}@darularkam.edu.ng`,
+      role: userType as 'student' | 'teacher' | 'parent' | 'admin' | 'exams-officer' | 'admission-officer' | 'finance-officer' | 'media-officer',
+      profileImage: '/placeholder.svg'
+    };
+
+    // Mock token
+    const mockToken = `mock-jwt-token-${Date.now()}`;
+
+    // Login user
+    login(mockUser, mockToken);
+
     toast({
       title: "Login Successful!",
       description: `Welcome to your dashboard.`,
@@ -47,10 +64,10 @@ export default function Login() {
       teacher: '/dashboard/teacher',
       parent: '/dashboard/parent',
       admin: '/dashboard/admin',
-      'exams-officer': '/dashboard/exams',
-      'admission-officer': '/dashboard/admission',
-      'finance-officer': '/dashboard/finance',
-      'media-officer': '/dashboard/media'
+      'exams-officer': '/dashboard/exams-officer',
+      'admission-officer': '/dashboard/admission-officer',
+      'finance-officer': '/dashboard/finance-officer',
+      'media-officer': '/dashboard/media-officer'
     };
 
     navigate(dashboardRoutes[userType as keyof typeof dashboardRoutes] || '/dashboard/student');

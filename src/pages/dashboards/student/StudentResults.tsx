@@ -1,3 +1,4 @@
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -7,118 +8,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import DashboardSidebar from '@/components/DashboardSidebar';
 import { TrendingUp, TrendingDown, Minus, Download, Eye, Trophy, Target, BookOpen, FileText } from 'lucide-react';
 
-const currentTermResults = [
-  {
-    subject: 'Mathematics',
-    ca1: 18,
-    ca2: 16,
-    exam: 78,
-    total: 112,
-    grade: 'A',
-    position: 5,
-    remark: 'Excellent'
-  },
-  {
-    subject: 'Physics',
-    ca1: 15,
-    ca2: 17,
-    exam: 65,
-    total: 97,
-    grade: 'B+',
-    position: 8,
-    remark: 'Very Good'
-  },
-  {
-    subject: 'Chemistry',
-    ca1: 16,
-    ca2: 14,
-    exam: 58,
-    total: 88,
-    grade: 'B',
-    position: 12,
-    remark: 'Good'
-  },
-  {
-    subject: 'Biology',
-    ca1: 19,
-    ca2: 18,
-    exam: 72,
-    total: 109,
-    grade: 'A',
-    position: 3,
-    remark: 'Excellent'
-  },
-  {
-    subject: 'English Language',
-    ca1: 17,
-    ca2: 15,
-    exam: 68,
-    total: 100,
-    grade: 'B+',
-    position: 7,
-    remark: 'Very Good'
-  },
-  {
-    subject: 'Geography',
-    ca1: 14,
-    ca2: 13,
-    exam: 55,
-    total: 82,
-    grade: 'B-',
-    position: 15,
-    remark: 'Satisfactory'
+const getGradeOrder = (grade: string): number => {
+  switch (grade) {
+    case 'A': return 5;
+    case 'B+': return 4;
+    case 'B': return 3;
+    case 'B-': return 2;
+    case 'C': return 1;
+    default: return 0;
   }
-];
-
-const previousTermResults = [
-  {
-    subject: 'Mathematics',
-    total: 105,
-    grade: 'A',
-    position: 7
-  },
-  {
-    subject: 'Physics',
-    total: 92,
-    grade: 'B+',
-    position: 10
-  },
-  {
-    subject: 'Chemistry',
-    total: 85,
-    grade: 'B',
-    position: 14
-  },
-  {
-    subject: 'Biology',
-    total: 108,
-    grade: 'A',
-    position: 4
-  },
-  {
-    subject: 'English Language',
-    total: 96,
-    grade: 'B+',
-    position: 9
-  },
-  {
-    subject: 'Geography',
-    total: 78,
-    grade: 'B-',
-    position: 18
-  }
-];
-
-const termComparison = currentTermResults.map(current => {
-  const previous = previousTermResults.find(p => p.subject === current.subject);
-  return {
-    ...current,
-    previousTotal: previous?.total || 0,
-    previousPosition: previous?.position || 0,
-    improvement: previous ? current.total - previous.total : 0,
-    positionChange: previous ? previous.position - current.position : 0
-  };
-});
+};
 
 const getGradeColor = (grade: string) => {
   switch (grade) {
@@ -137,16 +36,221 @@ const getTrendIcon = (value: number) => {
   return <Minus className="h-4 w-4 text-gray-600" />;
 };
 
+
+
 export default function StudentResults() {
-  const totalMarks = currentTermResults.reduce((sum, result) => sum + result.total, 0);
-  const maxMarks = currentTermResults.length * 120; // Assuming 120 max per subject
-  const percentage = Math.round((totalMarks / maxMarks) * 100);
+  const [currentTermResults, setCurrentTermResults] = useState([]);
+  const [previousTermResults, setPreviousTermResults] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Mock data that matches the structure from TeacherRecordSheet
+  const mockCurrentResults = [
+    {
+      subject: 'Mathematics',
+      ca1: 25,
+      ca2: 28,
+      ca3: 26,
+      exam: 75,
+      total: 77,
+      grade: 'B+',
+      remark: 'Very Good'
+    },
+    {
+      subject: 'Physics',
+      ca1: 24,
+      ca2: 26,
+      ca3: 25,
+      exam: 72,
+      total: 74,
+      grade: 'B+',
+      remark: 'Very Good'
+    },
+    {
+      subject: 'Chemistry',
+      ca1: 22,
+      ca2: 24,
+      ca3: 23,
+      exam: 68,
+      total: 69,
+      grade: 'B',
+      remark: 'Good'
+    },
+    {
+      subject: 'Biology',
+      ca1: 26,
+      ca2: 27,
+      ca3: 28,
+      exam: 76,
+      total: 79,
+      grade: 'B+',
+      remark: 'Very Good'
+    },
+    {
+      subject: 'English',
+      ca1: 23,
+      ca2: 25,
+      ca3: 24,
+      exam: 70,
+      total: 71,
+      grade: 'B',
+      remark: 'Good'
+    },
+    {
+      subject: 'Geography',
+      ca1: 21,
+      ca2: 23,
+      ca3: 22,
+      exam: 65,
+      total: 66,
+      grade: 'B-',
+      remark: 'Satisfactory'
+    }
+  ];
+
+  const mockPreviousResults = [
+    {
+      subject: 'Mathematics',
+      ca1: 22,
+      ca2: 25,
+      ca3: 24,
+      exam: 70,
+      total: 71,
+      grade: 'B',
+      remark: 'Good'
+    },
+    {
+      subject: 'Physics',
+      ca1: 21,
+      ca2: 23,
+      ca3: 22,
+      exam: 68,
+      total: 67,
+      grade: 'B-',
+      remark: 'Satisfactory'
+    },
+    {
+      subject: 'Chemistry',
+      ca1: 20,
+      ca2: 22,
+      ca3: 21,
+      exam: 65,
+      total: 64,
+      grade: 'B-',
+      remark: 'Satisfactory'
+    },
+    {
+      subject: 'Biology',
+      ca1: 24,
+      ca2: 25,
+      ca3: 26,
+      exam: 73,
+      total: 75,
+      grade: 'B+',
+      remark: 'Very Good'
+    },
+    {
+      subject: 'English',
+      ca1: 21,
+      ca2: 23,
+      ca3: 22,
+      exam: 67,
+      total: 67,
+      grade: 'B-',
+      remark: 'Satisfactory'
+    },
+    {
+      subject: 'Geography',
+      ca1: 19,
+      ca2: 21,
+      ca3: 20,
+      exam: 62,
+      total: 61,
+      grade: 'C',
+      remark: 'Pass'
+    }
+  ];
+
+  const fetchCurrentResults = async () => {
+    try {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setCurrentTermResults(mockCurrentResults);
+    } catch (err) {
+      setError('Failed to load current term results');
+    }
+  };
+
+  const fetchPreviousResults = async () => {
+    try {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+      setPreviousTermResults(mockPreviousResults);
+    } catch (err) {
+      setError('Failed to load previous term results');
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        await Promise.all([fetchCurrentResults(), fetchPreviousResults()]);
+      } catch (err) {
+        setError('Failed to load results data');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const termComparison = useMemo(() => {
+    if (!currentTermResults.length || !previousTermResults.length) return [];
+    return currentTermResults.map(current => {
+      const previous = previousTermResults.find(p => p.subject === current.subject);
+      return {
+        ...current,
+        previousTotal: previous?.total || 0,
+        previousPosition: previous?.grade || '',
+        improvement: previous ? current.total - previous.total : 0,
+        gradeChange: previous ? getGradeOrder(current.grade) - getGradeOrder(previous.grade) : 0
+      };
+    });
+  }, [currentTermResults, previousTermResults]);
+
+  const totalMarks = currentTermResults.reduce((sum, result) => sum + (result.total || 0), 0);
+  const maxMarks = currentTermResults.length * 100;
+  const percentage = maxMarks > 0 ? Math.round((totalMarks / maxMarks) * 100) : 0;
   const classAverage = 72; // Mock class average
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex">
+        <DashboardSidebar userType="student" />
+        <main className="flex-1 flex items-center justify-center">
+          <div>Loading results...</div>
+        </main>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background flex">
+        <DashboardSidebar userType="student" />
+        <main className="flex-1 flex items-center justify-center">
+          <div>Error: {error}</div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex">
       <DashboardSidebar userType="student" />
-      
+
       <main className="flex-1 overflow-y-auto">
         <div className="container mx-auto p-6 max-w-6xl">
           <div className="mb-6">
@@ -169,12 +273,12 @@ export default function StudentResults() {
             
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Class Position</CardTitle>
+                <CardTitle className="text-sm font-medium">Overall grade</CardTitle>
                 <Target className="h-4 w-4 text-blue-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">8th</div>
-                <p className="text-xs text-muted-foreground">out of 45 students</p>
+                <div className="text-2xl font-bold">B+</div>
+                <p className="text-xs text-muted-foreground">Very Good</p>
               </CardContent>
             </Card>
             
@@ -229,12 +333,12 @@ export default function StudentResults() {
                       <TableHeader>
                         <TableRow>
                           <TableHead>Subject</TableHead>
-                          <TableHead className="text-center">CA1 (20)</TableHead>
-                          <TableHead className="text-center">CA2 (20)</TableHead>
-                          <TableHead className="text-center">Exam (80)</TableHead>
-                          <TableHead className="text-center">Total (120)</TableHead>
+                          <TableHead className="text-center">CA1 (10)</TableHead>
+                          <TableHead className="text-center">CA2 (10)</TableHead>
+                          <TableHead className="text-center">CA3 (10)</TableHead>
+                          <TableHead className="text-center">Exam (70)</TableHead>
+                          <TableHead className="text-center">Total (100)</TableHead>
                           <TableHead className="text-center">Grade</TableHead>
-                          <TableHead className="text-center">Position</TableHead>
                           <TableHead>Remark</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -244,6 +348,7 @@ export default function StudentResults() {
                             <TableCell className="font-medium">{result.subject}</TableCell>
                             <TableCell className="text-center">{result.ca1}</TableCell>
                             <TableCell className="text-center">{result.ca2}</TableCell>
+                            <TableCell className="text-center">{result.ca3}</TableCell>
                             <TableCell className="text-center">{result.exam}</TableCell>
                             <TableCell className="text-center font-bold">{result.total}</TableCell>
                             <TableCell className="text-center">
@@ -251,7 +356,7 @@ export default function StudentResults() {
                                 {result.grade}
                               </Badge>
                             </TableCell>
-                            <TableCell className="text-center">{result.position}</TableCell>
+                            <TableCell className="text-center">{result.grade}</TableCell>
                             <TableCell>{result.remark}</TableCell>
                           </TableRow>
                         ))}
@@ -260,17 +365,13 @@ export default function StudentResults() {
                   </div>
                   
                   <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-                    <div className="grid md:grid-cols-3 gap-4 text-sm">
+                    <div className="grid md:grid-cols-2 gap-4 text-sm">
                       <div>
                         <p className="font-medium">Total Marks: {totalMarks}/{maxMarks}</p>
                         <p className="text-muted-foreground">Overall Percentage: {percentage}%</p>
                       </div>
                       <div>
-                        <p className="font-medium">Class Position: 8th/45</p>
-                        <p className="text-muted-foreground">Above Class Average</p>
-                      </div>
-                      <div>
-                        <p className="font-medium">Grade: B+</p>
+                        <p className="font-medium">Overall Grade: B+</p>
                         <p className="text-muted-foreground">Very Good Performance</p>
                       </div>
                     </div>
@@ -294,9 +395,9 @@ export default function StudentResults() {
                           <TableHead className="text-center">Current Total</TableHead>
                           <TableHead className="text-center">Previous Total</TableHead>
                           <TableHead className="text-center">Score Change</TableHead>
-                          <TableHead className="text-center">Current Position</TableHead>
-                          <TableHead className="text-center">Previous Position</TableHead>
-                          <TableHead className="text-center">Position Change</TableHead>
+                          <TableHead className="text-center">Current Grade</TableHead>
+                          <TableHead className="text-center">Previous Grade</TableHead>
+                          <TableHead className="text-center">Grade Change</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -313,13 +414,13 @@ export default function StudentResults() {
                                 </span>
                               </div>
                             </TableCell>
-                            <TableCell className="text-center">{result.position}</TableCell>
+                            <TableCell className="text-center">{result.grade}</TableCell>
                             <TableCell className="text-center">{result.previousPosition}</TableCell>
                             <TableCell className="text-center">
                               <div className="flex items-center justify-center space-x-1">
-                                {getTrendIcon(result.positionChange)}
-                                <span className={result.positionChange > 0 ? 'text-green-600' : result.positionChange < 0 ? 'text-red-600' : 'text-gray-600'}>
-                                  {result.positionChange > 0 ? '+' : ''}{result.positionChange}
+                                {getTrendIcon(result.gradeChange)}
+                                <span className={result.gradeChange > 0 ? 'text-green-600' : result.gradeChange < 0 ? 'text-red-600' : 'text-gray-600'}>
+                                  {result.gradeChange > 0 ? '+' : ''}{result.gradeChange}
                                 </span>
                               </div>
                             </TableCell>
@@ -344,9 +445,9 @@ export default function StudentResults() {
                       <div key={index} className="space-y-2">
                         <div className="flex justify-between text-sm">
                           <span className="font-medium">{result.subject}</span>
-                          <span>{Math.round((result.total / 120) * 100)}%</span>
+                          <span>{result.total}%</span>
                         </div>
-                        <Progress value={(result.total / 120) * 100} className="h-2" />
+                        <Progress value={result.total} className="h-2" />
                       </div>
                     ))}
                   </CardContent>
@@ -402,7 +503,7 @@ export default function StudentResults() {
                   <CardContent>
                     <div className="space-y-2 mb-4">
                       <p className="text-sm"><strong>Overall:</strong> 78% (B+)</p>
-                      <p className="text-sm"><strong>Position:</strong> 8th/45</p>
+                      <p className="text-sm"><strong>Grade:</strong> B+</p>
                       <p className="text-sm"><strong>Status:</strong> Promoted</p>
                     </div>
                     <div className="flex space-x-2">
@@ -429,7 +530,7 @@ export default function StudentResults() {
                   <CardContent>
                     <div className="space-y-2 mb-4">
                       <p className="text-sm"><strong>Overall:</strong> 74% (B)</p>
-                      <p className="text-sm"><strong>Position:</strong> 12th/45</p>
+                      <p className="text-sm"><strong>Grade:</strong> B</p>
                       <p className="text-sm"><strong>Status:</strong> Promoted</p>
                     </div>
                     <div className="flex space-x-2">
@@ -456,7 +557,7 @@ export default function StudentResults() {
                   <CardContent>
                     <div className="space-y-2 mb-4">
                       <p className="text-sm"><strong>Overall:</strong> 71% (B)</p>
-                      <p className="text-sm"><strong>Position:</strong> 15th/43</p>
+                      <p className="text-sm"><strong>Grade:</strong> B</p>
                       <p className="text-sm"><strong>Status:</strong> Promoted</p>
                     </div>
                     <div className="flex space-x-2">

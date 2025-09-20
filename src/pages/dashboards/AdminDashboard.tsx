@@ -1,17 +1,23 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { 
-  Users, 
-  BookOpen, 
-  Settings, 
-  BarChart3, 
+import {
+  Users,
+  BookOpen,
+  Settings,
+  BarChart3,
   Shield,
   Activity,
   Database,
   UserCog,
   Bell,
-  TrendingUp
+  TrendingUp,
+  Calendar,
+  MessageSquare,
+  HelpCircle,
+  User,
+  CreditCard,
+  FileText
 } from 'lucide-react';
 import DashboardSidebar from '@/components/DashboardSidebar';
 
@@ -30,34 +36,57 @@ export default function AdminDashboard() {
 
   const quickActions = [
     {
+      title: "My Profile",
+      description: "Update personal info & preferences",
+      icon: User,
+      href: "/dashboard/admin/profile",
+      variant: "default" as const,
+      priority: "high" as const
+    },
+    {
       title: "User Management",
-      description: "Manage all system users and roles",
+      description: "Manage students, teachers & staff",
       icon: Users,
       href: "/dashboard/admin/users",
-      variant: "default" as const
+      variant: "secondary" as const,
+      priority: "high" as const
     },
     {
-      title: "Subject Management",
-      description: "Create and manage subjects",
+      title: "Academic Overview",
+      description: "Monitor courses & performance",
       icon: BookOpen,
-      href: "/dashboard/admin/subjects",
-      variant: "secondary" as const
+      href: "/dashboard/admin/academics",
+      variant: "accent" as const,
+      priority: "high" as const
     },
     {
-      title: "System Settings",
-      description: "Configure system preferences",
-      icon: Settings,
-      href: "/dashboard/admin/settings",
-      variant: "accent" as const
+      title: "Financial Reports",
+      description: "Revenue, fees & expenses",
+      icon: CreditCard,
+      href: "/dashboard/admin/finance",
+      variant: "outline" as const,
+      priority: "medium" as const
     },
     {
-      title: "Analytics Dashboard",
-      description: "View detailed system analytics",
-      icon: BarChart3,
-      href: "/dashboard/admin/analytics",
-      variant: "outline" as const
+      title: "Event Management",
+      description: "Schedule & manage school events",
+      icon: Calendar,
+      href: "/dashboard/admin/events",
+      variant: "default" as const,
+      priority: "medium" as const
+    },
+    {
+      title: "Communications",
+      description: "Messages & notifications",
+      icon: MessageSquare,
+      href: "/dashboard/admin/messages",
+      variant: "secondary" as const,
+      priority: "medium" as const
     }
   ];
+
+  const essentialActions = quickActions.filter(action => action.priority === "high");
+  const additionalActions = quickActions.filter(action => action.priority === "medium");
 
   const systemStats = [
     { label: "Total Users", value: adminData.totalUsers, icon: Users, change: "+12" },
@@ -126,27 +155,64 @@ export default function AdminDashboard() {
           <div className="grid lg:grid-cols-3 gap-6">
             {/* Quick Actions */}
             <div className="lg:col-span-2 space-y-6">
+              {/* Essential Actions */}
               <Card className="border-0 shadow-elevation animate-fade-in">
                 <CardHeader>
-                  <CardTitle className="text-primary">Quick Actions</CardTitle>
+                  <CardTitle className="text-primary flex items-center">
+                    <Shield className="h-5 w-5 mr-2" />
+                    Essential Actions
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">Most frequently used administrative functions</p>
                 </CardHeader>
-                <CardContent className="grid md:grid-cols-2 gap-4">
-                  {quickActions.map((action, index) => (
-                    <div 
-                      key={index} 
-                      className="p-4 bg-muted/50 rounded-lg hover-lift"
+                <CardContent className="grid md:grid-cols-1 lg:grid-cols-3 gap-4">
+                  {essentialActions.map((action, index) => (
+                    <div
+                      key={index}
+                      className="p-4 bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 rounded-lg hover-lift group"
                     >
                       <div className="flex items-center space-x-3 mb-3">
-                        <div className="p-2 bg-gradient-primary rounded-lg">
+                        <div className="p-2 bg-gradient-primary rounded-lg group-hover:scale-110 transition-transform">
                           <action.icon className="h-5 w-5 text-white" />
                         </div>
-                        <div>
-                          <h3 className="font-medium text-primary">{action.title}</h3>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-primary">{action.title}</h3>
                           <p className="text-sm text-muted-foreground">{action.description}</p>
                         </div>
                       </div>
                       <Button asChild variant={action.variant} className="w-full">
                         <Link to={action.href}>Access</Link>
+                      </Button>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+
+              {/* Additional Actions */}
+              <Card className="border-0 shadow-elevation animate-fade-in">
+                <CardHeader>
+                  <CardTitle className="text-primary flex items-center">
+                    <Settings className="h-5 w-5 mr-2" />
+                    Additional Tools
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">Secondary administrative functions</p>
+                </CardHeader>
+                <CardContent className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {additionalActions.map((action, index) => (
+                    <div
+                      key={index}
+                      className="p-4 bg-muted/50 rounded-lg hover-lift group"
+                    >
+                      <div className="flex items-center space-x-3 mb-3">
+                        <div className="p-2 bg-gradient-primary rounded-lg group-hover:scale-110 transition-transform">
+                          <action.icon className="h-4 w-4 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-medium text-primary">{action.title}</h3>
+                          <p className="text-sm text-muted-foreground">{action.description}</p>
+                        </div>
+                      </div>
+                      <Button asChild variant={action.variant} size="sm" className="w-full">
+                        <Link to={action.href}>Open</Link>
                       </Button>
                     </div>
                   ))}
@@ -213,7 +279,7 @@ export default function AdminDashboard() {
                   ))}
                 </div>
                 <Button asChild variant="outline" className="w-full mt-4">
-                  <Link to="/dashboard/admin/activity-logs">View All Activities</Link>
+                  <Link to="/dashboard/admin/support">View Support Center</Link>
                 </Button>
               </CardContent>
             </Card>
