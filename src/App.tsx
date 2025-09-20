@@ -10,6 +10,11 @@ import Gallery from "./pages/Gallery";
 import Contact from "./pages/Contact";
 import Admission from "./pages/Admission";
 import StudentDashboard from "./pages/dashboards/StudentDashboard";
+import StudentProfile from "./pages/dashboards/student/StudentProfile";
+import StudentAcademics from "./pages/dashboards/student/StudentAcademics";
+import StudentSubjects from "./pages/dashboards/student/StudentSubjects";
+import StudentAssignments from "./pages/dashboards/student/StudentAssignments";
+import StudentResults from "./pages/dashboards/student/StudentResults";
 import TeacherDashboard from "./pages/dashboards/TeacherDashboard";
 import ParentDashboard from "./pages/dashboards/ParentDashboard";
 import ExamsOfficerDashboard from "./pages/dashboards/ExamsOfficerDashboard";
@@ -35,6 +40,11 @@ const App = () => (
           <Route path="/contact" element={<Contact />} />
           <Route path="/admission" element={<Admission />} />
           <Route path="/dashboard/student" element={<StudentDashboard />} />
+          <Route path="/dashboard/student/profile" element={<StudentProfile />} />
+          <Route path="/dashboard/student/academics" element={<StudentAcademics />} />
+          <Route path="/dashboard/student/academics/subjects" element={<StudentSubjects />} />
+          <Route path="/dashboard/student/academics/assignments" element={<StudentAssignments />} />
+          <Route path="/dashboard/student/academics/results" element={<StudentResults />} />
           <Route path="/dashboard/teacher" element={<TeacherDashboard />} />
           <Route path="/dashboard/parent" element={<ParentDashboard />} />
           <Route path="/dashboard/exams-officer" element={<ExamsOfficerDashboard />} />
