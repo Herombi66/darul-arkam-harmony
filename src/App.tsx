@@ -17,6 +17,13 @@ import StudentAcademics from "./pages/dashboards/student/StudentAcademics";
 import StudentSubjects from "./pages/dashboards/student/StudentSubjects";
 import StudentAssignments from "./pages/dashboards/student/StudentAssignments";
 import StudentResults from "./pages/dashboards/student/StudentResults";
+import PaySchoolFees from "./pages/dashboards/student/PaySchoolFees";
+import PaymentHistory from "./pages/dashboards/student/PaymentHistory";
+import AttendanceRecords from "./pages/dashboards/student/AttendanceRecords";
+import RequestLeave from "./pages/dashboards/student/RequestLeave";
+import StudentEvents from "./pages/dashboards/student/Events";
+import StudentMessages from "./pages/dashboards/student/Messages";
+import StudentSupport from "./pages/dashboards/student/Support";
 import TeacherDashboard from "./pages/dashboards/TeacherDashboard";
 import TeacherProfile from "./pages/dashboards/TeacherProfile";
 import TeacherSubjects from "./pages/dashboards/TeacherSubjects";
@@ -65,6 +72,13 @@ const App = () => (
             <Route path="/dashboard/student/academics/subjects" element={<StudentSubjects />} />
             <Route path="/dashboard/student/academics/assignments" element={<StudentAssignments />} />
             <Route path="/dashboard/student/academics/results" element={<StudentResults />} />
+            <Route path="/dashboard/student/payments/pay" element={<PaySchoolFees />} />
+            <Route path="/dashboard/student/payments/history" element={<PaymentHistory />} />
+            <Route path="/dashboard/student/attendance/records" element={<AttendanceRecords />} />
+            <Route path="/dashboard/student/attendance/request-leave" element={<RequestLeave />} />
+            <Route path="/dashboard/student/events" element={<StudentEvents />} />
+            <Route path="/dashboard/student/messages" element={<StudentMessages />} />
+            <Route path="/dashboard/student/support" element={<StudentSupport />} />
             <Route path="/dashboard/teacher" element={<ProtectedRoute allowedRoles={['teacher']}><TeacherDashboard /></ProtectedRoute>} />
             <Route path="/dashboard/teacher/profile" element={<ProtectedRoute allowedRoles={['teacher']}><TeacherProfile /></ProtectedRoute>} />
             <Route path="/dashboard/teacher/subjects" element={<ProtectedRoute allowedRoles={['teacher']}><TeacherSubjects /></ProtectedRoute>} />

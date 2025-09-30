@@ -45,7 +45,8 @@ import {
   FileText,
   Phone,
   Mail,
-  DollarSign
+  DollarSign,
+  Edit
 } from 'lucide-react';
 import DashboardSidebar from '@/components/DashboardSidebar';
 
