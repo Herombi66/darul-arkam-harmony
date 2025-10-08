@@ -29,6 +29,12 @@ import TeacherProfile from "./pages/dashboards/TeacherProfile";
 import TeacherSubjects from "./pages/dashboards/TeacherSubjects";
 import TeacherSubjectDetails from "./pages/dashboards/TeacherSubjectDetails";
 import TeacherRecordSheet from "./pages/dashboards/TeacherRecordSheet";
+import TeacherClasses from "./pages/dashboards/TeacherClasses";
+import TeacherAssignments from "./pages/dashboards/TeacherAssignments";
+import TeacherAttendance from "./pages/dashboards/TeacherAttendance";
+import TeacherEvents from "./pages/dashboards/TeacherEvents";
+import TeacherMessages from "./pages/dashboards/TeacherMessages";
+import TeacherSupport from "./pages/dashboards/TeacherSupport";
 import ParentDashboard from "./pages/dashboards/ParentDashboard";
 import Profile from "./pages/dashboards/parent/Profile";
 import Children from "./pages/dashboards/parent/Children";
@@ -83,13 +89,13 @@ const App = () => (
             <Route path="/dashboard/teacher/profile" element={<ProtectedRoute allowedRoles={['teacher']}><TeacherProfile /></ProtectedRoute>} />
             <Route path="/dashboard/teacher/subjects" element={<ProtectedRoute allowedRoles={['teacher']}><TeacherSubjects /></ProtectedRoute>} />
             <Route path="/dashboard/teacher/subjects/:subject" element={<ProtectedRoute allowedRoles={['teacher']}><TeacherSubjectDetails /></ProtectedRoute>} />
-            <Route path="/dashboard/teacher/classes" element={<ProtectedRoute allowedRoles={['teacher']}><TeacherSubjects /></ProtectedRoute>} />
-            <Route path="/dashboard/teacher/assignments" element={<ProtectedRoute allowedRoles={['teacher']}><TeacherSubjects /></ProtectedRoute>} />
-            <Route path="/dashboard/teacher/attendance" element={<ProtectedRoute allowedRoles={['teacher']}><TeacherSubjects /></ProtectedRoute>} />
+            <Route path="/dashboard/teacher/classes" element={<ProtectedRoute allowedRoles={['teacher']}><TeacherClasses /></ProtectedRoute>} />
+            <Route path="/dashboard/teacher/assignments" element={<ProtectedRoute allowedRoles={['teacher']}><TeacherAssignments /></ProtectedRoute>} />
+            <Route path="/dashboard/teacher/attendance" element={<ProtectedRoute allowedRoles={['teacher']}><TeacherAttendance /></ProtectedRoute>} />
             <Route path="/dashboard/teacher/record-sheet" element={<ProtectedRoute allowedRoles={['teacher']}><TeacherRecordSheet /></ProtectedRoute>} />
-            <Route path="/dashboard/teacher/events" element={<ProtectedRoute allowedRoles={['teacher']}><TeacherSubjects /></ProtectedRoute>} />
-            <Route path="/dashboard/teacher/messages" element={<ProtectedRoute allowedRoles={['teacher']}><TeacherSubjects /></ProtectedRoute>} />
-            <Route path="/dashboard/teacher/support" element={<ProtectedRoute allowedRoles={['teacher']}><TeacherSubjects /></ProtectedRoute>} />
+            <Route path="/dashboard/teacher/events" element={<ProtectedRoute allowedRoles={['teacher']}><TeacherEvents /></ProtectedRoute>} />
+            <Route path="/dashboard/teacher/messages" element={<ProtectedRoute allowedRoles={['teacher']}><TeacherMessages /></ProtectedRoute>} />
+            <Route path="/dashboard/teacher/support" element={<ProtectedRoute allowedRoles={['teacher']}><TeacherSupport /></ProtectedRoute>} />
             <Route path="/dashboard/parent" element={<ParentDashboard />} />
             <Route path="/dashboard/parent/profile" element={<Profile />} />
             <Route path="/dashboard/parent/children" element={<Children />} />
