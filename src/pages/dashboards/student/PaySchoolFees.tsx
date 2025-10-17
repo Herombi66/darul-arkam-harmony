@@ -15,10 +15,10 @@ export default function PaySchoolFees() {
 
   const feeStructure = [
     { item: 'Tuition Fee', amount: 150000, status: 'pending' },
-    { item: 'Library Fee', amount: 5000, status: 'paid' },
-    { item: 'Laboratory Fee', amount: 10000, status: 'pending' },
-    { item: 'Sports Fee', amount: 3000, status: 'paid' },
-    { item: 'Exam Fee', amount: 7000, status: 'pending' }
+    // { item: 'Library Fee', amount: 5000, status: 'paid' },
+    // { item: 'Laboratory Fee', amount: 10000, status: 'pending' },
+    // { item: 'Sports Fee', amount: 3000, status: 'paid' },
+    // { item: 'Exam Fee', amount: 7000, status: 'pending' }
   ];
 
   const totalPending = feeStructure

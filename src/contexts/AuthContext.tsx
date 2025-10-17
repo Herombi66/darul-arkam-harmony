@@ -1,87 +1,46 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react'; 
 
-interface User {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: 'student' | 'teacher' | 'parent' | 'admin' | 'exams-officer' | 'admission-officer' | 'finance-officer' | 'media-officer';
-  profileImage?: string;
-}
+interface AuthContextProps { 
+  isAuthenticated: boolean; 
+  userRole: 'student' | 'teacher' | 'parent' | 'admin' | 'exams-officer' | 'admission-officer' | 'finance-officer' | 'media-officer' | null; 
+  login: (role: 'student' | 'teacher' | 'parent' | 'admin' | 'exams-officer' | 'admission-officer' | 'finance-officer' | 'media-officer') => void; 
+  logout: () => void; 
+} 
 
-interface AuthContextType {
-  user: User | null;
-  token: string | null;
-  login: (user: User, token: string) => void;
-  logout: () => void;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-}
+export const AuthContext = createContext<AuthContextProps>({ 
+  isAuthenticated: false, 
+  userRole: null, 
+  login: () => {}, 
+  logout: () => {}, 
+});
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
+// Custom hook to use the auth context
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-};
+}; 
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => { 
+  const [isAuthenticated, setIsAuthenticated] = useState(false); 
+  const [userRole, setUserRole] = useState<'student' | 'teacher' | 'parent' | 'admin' | 'exams-officer' | 'admission-officer' | 'finance-officer' | 'media-officer' | null>(null); 
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const login = (role: 'student' | 'teacher' | 'parent' | 'admin' | 'exams-officer' | 'admission-officer' | 'finance-officer' | 'media-officer') => { 
+    setIsAuthenticated(true); 
+    setUserRole(role); 
+  }; 
 
-  useEffect(() => {
-    // Check for stored authentication on app load
-    const storedToken = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
+  const logout = () => { 
+    setIsAuthenticated(false); 
+    setUserRole(null); 
+    localStorage.removeItem('token'); 
+  }; 
 
-    if (storedToken && storedUser) {
-      try {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        // Invalid stored data, clear it
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-      }
-    }
-
-    setIsLoading(false);
-  }, []);
-
-  const login = (userData: User, authToken: string) => {
-    setUser(userData);
-    setToken(authToken);
-    localStorage.setItem('token', authToken);
-    localStorage.setItem('user', JSON.stringify(userData));
-  };
-
-  const logout = () => {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-  };
-
-  const value: AuthContextType = {
-    user,
-    token,
-    login,
-    logout,
-    isAuthenticated: !!user && !!token,
-    isLoading,
-  };
-
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return ( 
+    <AuthContext.Provider value={{ isAuthenticated, userRole, login, logout }}> 
+      {children} 
+    </AuthContext.Provider> 
+  ); 
 };

@@ -15,9 +15,22 @@ export default function Login() {
     username: '',
     password: ''
   });
+  const [error, setError] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
   const { login } = useAuth();
+
+  // Mock user database with credentials
+  const mockUsers = [
+    { username: 'STU123', password: 'student123', role: 'student' },
+    { username: 'TCH123', password: 'teacher123', role: 'teacher' },
+    { username: 'PAR123', password: 'parent123', role: 'parent' },
+    { username: 'ADM123', password: 'admin123', role: 'admin' },
+    { username: 'EXM123', password: 'exams123', role: 'exams-officer' },
+    { username: 'ADO123', password: 'admission123', role: 'admission-officer' },
+    { username: 'FIN123', password: 'finance123', role: 'finance-officer' },
+    { username: 'MED123', password: 'media123', role: 'media-officer' },
+  ];
 
   const detectUserRole = (username: string) => {
     // Auto-detect role based on ID format
@@ -34,24 +47,27 @@ export default function Login() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
 
-    const userType = detectUserRole(credentials.username);
+    // Find user in mock database
+    const user = mockUsers.find(user => user.username === credentials.username);
+    
+    // Validate credentials
+    if (!user || user.password !== credentials.password) {
+      setError('Invalid username or password');
+      toast({
+        title: "Login Failed",
+        description: "Invalid username or password. Please try again.",
+        variant: "destructive"
+      });
+      return;
+    }
 
-    // Mock user data based on role
-    const mockUser = {
-      id: credentials.username,
-      firstName: userType === 'teacher' ? 'Fatima' : 'Ahmad',
-      lastName: userType === 'teacher' ? 'Hassan' : 'Musa',
-      email: `${credentials.username.toLowerCase()}@darularkam.edu.ng`,
-      role: userType as 'student' | 'teacher' | 'parent' | 'admin' | 'exams-officer' | 'admission-officer' | 'finance-officer' | 'media-officer',
-      profileImage: '/placeholder.svg'
-    };
-
-    // Mock token
-    const mockToken = `mock-jwt-token-${Date.now()}`;
-
-    // Login user
-    login(mockUser, mockToken);
+    // Login user with the role
+    login(user.role as 'student' | 'teacher' | 'parent' | 'admin' | 'exams-officer' | 'admission-officer' | 'finance-officer' | 'media-officer');
+    
+    // Store username in localStorage for reference
+    localStorage.setItem('username', credentials.username);
 
     toast({
       title: "Login Successful!",
