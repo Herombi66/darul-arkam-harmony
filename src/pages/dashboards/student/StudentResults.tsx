@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -7,25 +8,46 @@ import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import DashboardSidebar from '@/components/DashboardSidebar';
 import { TrendingUp, TrendingDown, Minus, Download, Eye, Trophy, Target, BookOpen, FileText } from 'lucide-react';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import ReactToPrint from 'react-to-print';
+import { useAuth } from '@/contexts/AuthContext';
+import schoolLogo from '@/assets/school-logo.png';
+import { useRef } from 'react';
 
 const getGradeOrder = (grade: string): number => {
   switch (grade) {
-    case 'A': return 5;
+    case 'A+': return 1;
+    case 'A': return 2;
+    case 'A-': return 3;
     case 'B+': return 4;
-    case 'B': return 3;
-    case 'B-': return 2;
-    case 'C': return 1;
-    default: return 0;
+    case 'B': return 5;
+    case 'B-': return 6;
+    case 'C+': return 7;
+    case 'C': return 8;
+    case 'C-': return 9;
+    case 'D+': return 10;
+    case 'D': return 11;
+    case 'F': return 12;
+    default: return 99;
   }
 };
 
 const getGradeColor = (grade: string) => {
   switch (grade) {
+    case 'A+': return 'bg-green-100 text-green-800';
     case 'A': return 'bg-green-100 text-green-800';
+    case 'A-': return 'bg-green-100 text-green-800';
     case 'B+': return 'bg-blue-100 text-blue-800';
-    case 'B': return 'bg-yellow-100 text-yellow-800';
-    case 'B-': return 'bg-orange-100 text-orange-800';
-    case 'C': return 'bg-red-100 text-red-800';
+    case 'B': return 'bg-blue-100 text-blue-800';
+    case 'B-': return 'bg-blue-100 text-blue-800';
+    case 'C+': return 'bg-yellow-100 text-yellow-800';
+    case 'C': return 'bg-yellow-100 text-yellow-800';
+    case 'C-': return 'bg-yellow-100 text-yellow-800';
+    case 'D+': return 'bg-orange-100 text-orange-800';
+    case 'D': return 'bg-orange-100 text-orange-800';
+    case 'F': return 'bg-red-100 text-red-800';
     default: return 'bg-gray-100 text-gray-800';
   }
 };
@@ -43,6 +65,11 @@ export default function StudentResults() {
   const [previousTermResults, setPreviousTermResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [reportDialogData, setReportDialogData] = useState<any>(null);
+  // Add missing auth and ref
+  const { user } = useAuth();
+  const reportRef = useRef<HTMLDivElement>(null);
 
   // Mock data that matches the structure from TeacherRecordSheet
   const mockCurrentResults = [
@@ -206,6 +233,86 @@ export default function StudentResults() {
     fetchData();
   }, []);
 
+  // Helper: parse term and year from a title like "Second Term 2024/2025"
+  const getTermAndYear = (title?: string) => {
+    if (!title) return { term: 'N/A', year: 'N/A' };
+    const match = title.match(/(First|Second|Third) Term\s+(\d{4}\/\d{4})/i);
+    return { term: match?.[1] || 'N/A', year: match?.[2] || 'N/A' };
+  };
+
+  // Open dialog with report data based on selected card
+  const handleViewReport = (termKey: 'current' | 'previous' | 'third') => {
+    const reports: Record<string, any> = {
+      current: {
+        title: 'Second Term 2024/2025',
+        status: 'Promoted',
+        results: mockCurrentResults.map(r => ({ subject: r.subject, ca1: r.ca1, ca2: r.ca2, ca3: r.ca3, exam: r.exam, total: r.total, grade: r.grade, remark: r.remark })),
+      },
+      previous: {
+        title: 'First Term 2024/2025',
+        status: 'Promoted',
+        results: mockPreviousResults.map(r => ({ subject: r.subject, ca1: r.ca1, ca2: r.ca2, ca3: r.ca3, exam: r.exam, total: r.total, grade: r.grade, remark: r.remark })),
+      },
+      third: {
+        title: 'Third Term 2023/2024',
+        status: 'Promoted',
+        results: [
+          { subject: 'Mathematics', ca1: 22, ca2: 24, ca3: 23, exam: 70, total: 71, grade: 'B', remark: 'Good' },
+          { subject: 'Physics', ca1: 21, ca2: 23, ca3: 22, exam: 69, total: 70, grade: 'B', remark: 'Good' },
+          { subject: 'Chemistry', ca1: 20, ca2: 22, ca3: 21, exam: 66, total: 68, grade: 'B-', remark: 'Satisfactory' },
+        ],
+      },
+    };
+    setReportDialogData(reports[termKey]);
+    setReportDialogOpen(true);
+  };
+
+  // Export current report view in dialog to PDF
+  const handleDownloadReport = async () => {
+    if (!reportRef.current) return;
+    const canvas = await html2canvas(reportRef.current, { scale: 2, useCORS: true });
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const imgWidth = pageWidth - 20; // 10mm margins
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    if (imgHeight <= pageHeight - 20) {
+      pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+    } else {
+      // Slice tall canvas into multiple pages
+      let position = 0;
+      const ratio = imgWidth / canvas.width;
+      const sliceHeightPx = Math.floor((pageHeight - 20) / ratio);
+      const pageCanvas = document.createElement('canvas');
+      pageCanvas.width = canvas.width;
+      pageCanvas.height = sliceHeightPx;
+      const ctx = pageCanvas.getContext('2d')!;
+
+      while (position < canvas.height) {
+        ctx.clearRect(0, 0, pageCanvas.width, pageCanvas.height);
+        ctx.drawImage(
+          canvas,
+          0,
+          position,
+          canvas.width,
+          sliceHeightPx,
+          0,
+          0,
+          canvas.width,
+          sliceHeightPx
+        );
+        const pageImgData = pageCanvas.toDataURL('image/png');
+        if (position > 0) pdf.addPage();
+        pdf.addImage(pageImgData, 'PNG', 10, 10, imgWidth, sliceHeightPx * ratio);
+        position += sliceHeightPx;
+      }
+    }
+
+    pdf.save(`${reportDialogData?.title?.replace(/\s+/g, '_') || 'Report'}.pdf`);
+  };
+
   const termComparison = useMemo(() => {
     if (!currentTermResults.length || !previousTermResults.length) return [];
     return currentTermResults.map(current => {
@@ -356,7 +463,7 @@ export default function StudentResults() {
                                 {result.grade}
                               </Badge>
                             </TableCell>
-                            <TableCell className="text-center">{result.grade}</TableCell>
+                            <TableCell className="text-center">{getGradeRemark(result.grade)}</TableCell>
                             <TableCell>{result.remark}</TableCell>
                           </TableRow>
                         ))}
@@ -371,7 +478,7 @@ export default function StudentResults() {
                         <p className="text-muted-foreground">Overall Percentage: {percentage}%</p>
                       </div>
                       <div>
-                        <p className="font-medium">Overall Grade: B+</p>
+                        <p className="font-medium">Overall Grade: {getGradeRemark('B+')}</p>
                         <p className="text-muted-foreground">Very Good Performance</p>
                       </div>
                     </div>
@@ -502,16 +609,16 @@ export default function StudentResults() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2 mb-4">
-                      <p className="text-sm"><strong>Overall:</strong> 78% (B+)</p>
-                      <p className="text-sm"><strong>Grade:</strong> B+</p>
+                      <p className="text-sm"><strong>Overall:</strong> 78% ({getGradeRemark('B+')})</p>
+                      <p className="text-sm"><strong>Grade:</strong> {getGradeRemark('B+')}</p>
                       <p className="text-sm"><strong>Status:</strong> Promoted</p>
                     </div>
                     <div className="flex space-x-2">
-                      <Button size="sm">
+                      <Button size="sm" aria-label="View report Second Term 2024/2025" data-testid="view-report-current" onClick={() => handleViewReport('current')}>
                         <Eye className="h-4 w-4 mr-2" />
                         View
                       </Button>
-                      <Button size="sm" variant="outline">
+                      <Button size="sm" variant="outline" aria-label="Download report Second Term 2024/2025">
                         <Download className="h-4 w-4 mr-2" />
                         Download
                       </Button>
@@ -534,11 +641,11 @@ export default function StudentResults() {
                       <p className="text-sm"><strong>Status:</strong> Promoted</p>
                     </div>
                     <div className="flex space-x-2">
-                      <Button size="sm">
+                      <Button size="sm" aria-label="View report First Term 2024/2025" data-testid="view-report-previous" onClick={() => handleViewReport('previous')}>
                         <Eye className="h-4 w-4 mr-2" />
                         View
                       </Button>
-                      <Button size="sm" variant="outline">
+                      <Button size="sm" variant="outline" aria-label="Download report First Term 2024/2025">
                         <Download className="h-4 w-4 mr-2" />
                         Download
                       </Button>
@@ -561,11 +668,11 @@ export default function StudentResults() {
                       <p className="text-sm"><strong>Status:</strong> Promoted</p>
                     </div>
                     <div className="flex space-x-2">
-                      <Button size="sm">
+                      <Button size="sm" aria-label="View report Third Term 2023/2024" data-testid="view-report-third" onClick={() => handleViewReport('third')}>
                         <Eye className="h-4 w-4 mr-2" />
                         View
                       </Button>
-                      <Button size="sm" variant="outline">
+                      <Button size="sm" variant="outline" aria-label="Download report Third Term 2023/2024">
                         <Download className="h-4 w-4 mr-2" />
                         Download
                       </Button>
@@ -576,7 +683,137 @@ export default function StudentResults() {
             </TabsContent>
           </Tabs>
         </div>
+
+        {/* Report Dialog */}
+        <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+          <DialogContent className="max-w-[95vw] sm:max-w-3xl" aria-label="Report dialog" data-testid="report-dialog">
+            {/* Print styles */}
+            <style>{`@page { margin: 15mm; } .page-break { page-break-after: always; }`}</style>
+            <DialogHeader>
+              <DialogTitle data-testid="report-title">{reportDialogData?.title || 'Report Details'}</DialogTitle>
+              <DialogDescription>Comprehensive performance report</DialogDescription>
+            </DialogHeader>
+
+            {/* Report Container for print/PDF */}
+            <div ref={reportRef} className="report-container bg-white text-black p-6 rounded-md border">
+              {/* Header Section: School Info */}
+              <div className="flex items-center gap-4 border-b pb-4 mb-4">
+                <img src={schoolLogo} alt="School Logo" className="h-12 w-12 object-contain" />
+                <div>
+                  <h2 className="text-xl font-bold">Darul Arkam Harmony School</h2>
+                  <p className="text-sm text-muted-foreground">123 School Road, City, Country</p>
+                </div>
+              </div>
+
+              {/* Student Details and Exam Period */}
+              <div className="grid sm:grid-cols-2 gap-4 border-b pb-4 mb-4">
+                <div className="space-y-1">
+                  <h3 className="text-base font-semibold">Student Details</h3>
+                  <p className="text-sm"><strong>Name:</strong> {user?.name || 'Student Name'}</p>
+                  <p className="text-sm"><strong>ID:</strong> {user?.id_number || user?.roll_number || user?.id || 'N/A'}</p>
+                  <p className="text-sm"><strong>Class:</strong> SS2</p>
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-base font-semibold">Exam Period</h3>
+                  <p className="text-sm"><strong>Term:</strong> {getTermAndYear(reportDialogData?.title).term}</p>
+                  <p className="text-sm"><strong>Academic Year:</strong> {getTermAndYear(reportDialogData?.title).year}</p>
+                  <p className="text-sm"><strong>Status:</strong> {reportDialogData?.status}</p>
+                </div>
+              </div>
+
+              {/* Results Table: Subject Grades and Performance */}
+              <div className="mb-4">
+                <h3 className="text-base font-semibold mb-2">Results</h3>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Subject</TableHead>
+                        <TableHead className="text-center">CA1 (10)</TableHead>
+                        <TableHead className="text-center">CA2 (10)</TableHead>
+                        <TableHead className="text-center">CA3 (10)</TableHead>
+                        <TableHead className="text-center">Exam (70)</TableHead>
+                        <TableHead className="text-center">Total (100)</TableHead>
+                        <TableHead className="text-center">Grade</TableHead>
+                        <TableHead className="text-right">Remark</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {reportDialogData?.results?.map((r: any, idx: number) => (
+                        <TableRow key={idx} data-testid={`report-row-${idx}`}>
+                          <TableCell className="font-medium">{r.subject}</TableCell>
+                          <TableCell className="text-center">{r.ca1}</TableCell>
+                          <TableCell className="text-center">{r.ca2}</TableCell>
+                          <TableCell className="text-center">{r.ca3}</TableCell>
+                          <TableCell className="text-center">{r.exam}</TableCell>
+                          <TableCell className="text-center font-bold">{r.total}</TableCell>
+                          <TableCell className="text-center">{r.grade}</TableCell>
+                          <TableCell className="text-right">{r.remark || getGradeRemark(r.grade)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+
+              {/* Footer Section: Principal's Remarks and Signature */}
+              <div className="border-t pt-4">
+                <h3 className="text-base font-semibold mb-2">Principal's Remarks</h3>
+                <p className="text-sm mb-6">Keep up the excellent performance. Continue to focus on practical applications and analytical skills for sustained improvement.</p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="h-px bg-muted w-48" />
+                    <p className="text-sm mt-1">Principal's Signature</p>
+                  </div>
+                  <p className="text-sm">Date: {new Date().toLocaleDateString()}</p>
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter className="flex gap-2">
+              <Button variant="outline" onClick={() => setReportDialogOpen(false)}>Close</Button>
+              <Button onClick={handleDownloadReport}>
+                <Download className="h-4 w-4 mr-2" />
+                Download PDF
+              </Button>
+              <ReactToPrint
+                trigger={() => (
+                  <Button variant="secondary">Print</Button>
+                )}
+                content={() => reportRef.current}
+                pageStyle="@page { margin: 15mm; }"
+              />
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
-  );
-}
+    );
+  }
+
+// Map grade letters to remarks
+const getGradeRemark = (grade: string): string => {
+  switch (grade) {
+    case 'A+':
+    case 'A':
+    case 'A-':
+      return 'Excellent';
+    case 'B+':
+      return 'Very Good';
+    case 'B':
+    case 'B-':
+      return 'Good';
+    case 'C+':
+    case 'C':
+      return 'Average';
+    case 'C-':
+      return 'Below Average';
+    case 'D+':
+    case 'D':
+      return 'Poor';
+    case 'F':
+      return 'Fail';
+    default:
+      return grade;
+  }
+};

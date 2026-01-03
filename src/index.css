@@ -58,10 +58,10 @@ All colors MUST be HSL.
     --ring: 240 77% 15%;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(240 77% 15%), hsl(106 74% 79%));
-    --gradient-secondary: linear-gradient(135deg, hsl(106 74% 79%), hsl(102 94% 7%));
-    --gradient-accent: linear-gradient(135deg, hsl(102 94% 7%), hsl(240 77% 15%));
-    --gradient-hero: linear-gradient(135deg, hsl(240 77% 15%) 0%, hsl(106 74% 79%) 50%, hsl(102 94% 7%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+    --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)), hsl(var(--accent)));
+    --gradient-accent: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--primary)));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 50%, hsl(var(--accent)) 100%);
 
     /* Shadows */
     --shadow-elevation: 0 10px 30px -10px hsl(240 77% 15% / 0.3);
@@ -128,7 +128,8 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
+    color-scheme: light dark;
   }
 }
 
@@ -177,5 +178,54 @@ All colors MUST be HSL.
     @apply transition-smooth hover:shadow-glow;
   }
 
-}
+  /* Responsive container for critical div elements */
+  .responsive-div {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    line-height: 1.5;
+  }
+  @media (min-width: 640px) { /* small devices */
+    .responsive-div {
+      max-width: 640px;
+      padding-left: 1.25rem;
+      padding-right: 1.25rem;
+    }
+  }
+  @media (min-width: 768px) { /* tablets */
+    .responsive-div {
+      max-width: 768px;
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+  @media (min-width: 1024px) { /* large tablets */
+    .responsive-div {
+      max-width: 1024px;
+      padding-left: 1.75rem;
+      padding-right: 1.75rem;
+    }
+  }
 
+  /* Media scaling inside responsive div */
+  .responsive-div img,
+  .responsive-div video,
+  .responsive-div canvas {
+    max-width: 100%;
+    height: auto;
+    object-fit: cover;
+  }
+
+  /* Scalable headings for readability */
+  .responsive-div h1 { font-size: clamp(1.25rem, 5vw, 2rem); }
+  .responsive-div h2 { font-size: clamp(1.125rem, 4vw, 1.75rem); }
+  .responsive-div h3 { font-size: clamp(1rem, 3vw, 1.25rem); }
+  .responsive-div p { font-size: clamp(0.95rem, 2.5vw, 1rem); }
+
+  /* Avoid horizontal scroll on small screens */
+  .responsive-div { overflow-x: hidden; }
+}

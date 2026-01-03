@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DashboardSidebar from '@/components/DashboardSidebar';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import { getThreads, getThread, createThread, sendToThread, searchMessages, flagMessage, unflagMessage, archiveThread, unarchiveThread, getSocket, startTyping, stopTyping, type Thread, type Message as Msg } from '@/services/messages';
 import {
   Mail,
   Send,
@@ -22,96 +25,24 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-interface Message {
-  id: string;
-  sender: string;
-  senderRole: 'admin' | 'parent' | 'teacher' | 'student';
-  subject: string;
-  preview: string;
-  content: string;
-  date: string;
-  time: string;
-  read: boolean;
-  starred: boolean;
-  category: 'inbox' | 'sent' | 'archived';
-}
-
-const mockMessages: Message[] = [
-  {
-    id: '1',
-    sender: 'Principal Office',
-    senderRole: 'admin',
-    subject: 'Staff Meeting Tomorrow',
-    preview: 'Reminder about the staff meeting scheduled for tomorrow at 10 AM...',
-    content: 'This is to remind all teaching staff about tomorrow\'s meeting at 10 AM in the staff room. Please ensure attendance.',
-    date: '2024-01-20',
-    time: '2:30 PM',
-    read: false,
-    starred: true,
-    category: 'inbox'
-  },
-  {
-    id: '2',
-    sender: 'Mrs. Aisha Mohammed',
-    senderRole: 'parent',
-    subject: 'Question about my child\'s performance',
-    preview: 'I would like to discuss my child\'s recent test scores...',
-    content: 'Good afternoon. I noticed my child Ahmad scored lower than usual in the last Mathematics test. Could we schedule a meeting to discuss this?',
-    date: '2024-01-19',
-    time: '4:15 PM',
-    read: false,
-    starred: false,
-    category: 'inbox'
-  },
-  {
-    id: '3',
-    sender: 'Mr. Usman Kano',
-    senderRole: 'teacher',
-    subject: 'Collaboration on Science Fair',
-    preview: 'Would you be interested in collaborating for the upcoming science fair...',
-    content: 'Hi colleague! I\'m organizing the science fair and would love your input on the Mathematics section. Can we meet this week?',
-    date: '2024-01-18',
-    time: '11:20 AM',
-    read: true,
-    starred: false,
-    category: 'inbox'
-  },
-  {
-    id: '4',
-    sender: 'Fatima Ibrahim',
-    senderRole: 'student',
-    subject: 'Request for Extra Classes',
-    preview: 'I\'m struggling with quadratic equations and would like extra help...',
-    content: 'Dear Teacher, I find the quadratic equations topic challenging. Would it be possible to have extra classes after school?',
-    date: '2024-01-17',
-    time: '9:45 AM',
-    read: true,
-    starred: true,
-    category: 'inbox'
-  },
-  {
-    id: '5',
-    sender: 'Exams Office',
-    senderRole: 'admin',
-    subject: 'Result Submission Deadline',
-    preview: 'Final reminder: Results must be submitted by January 30th...',
-    content: 'This is the final reminder that all end-of-term results must be submitted to the Exams Office by January 30th, 2024.',
-    date: '2024-01-16',
-    time: '3:00 PM',
-    read: true,
-    starred: false,
-    category: 'inbox'
-  }
-];
+type Message = Msg
 
 export default function TeacherMessages() {
-  const [messages] = useState<Message[]>(mockMessages);
+  const { token, user } = useAuth();
+  const { toast } = useToast();
+  const [threads, setThreads] = useState<Thread[]>([]);
+  const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [isComposeOpen, setIsComposeOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [composeRecipientRole, setComposeRecipientRole] = useState<'admin' | 'parent' | 'teacher' | 'student' | null>(null);
+  const [composeSubject, setComposeSubject] = useState('');
+  const [composeBody, setComposeBody] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
 
-  const unreadCount = messages.filter(m => !m.read && m.category === 'inbox').length;
-  const starredCount = messages.filter(m => m.starred).length;
+  const unreadCount = messages.filter(m => !m.read_at && m.to_user_id === user?.id).length;
+  const starredCount = 0;
 
   const getRoleBadge = (role: string) => {
     const badges = {
@@ -123,10 +54,37 @@ export default function TeacherMessages() {
     return badges[role as keyof typeof badges];
   };
 
-  const filteredMessages = messages.filter(msg =>
-    msg.sender.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    msg.subject.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredMessages = useMemo(() => {
+    if (!searchTerm) return messages;
+    return messages.filter(msg =>
+      (msg.subject || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (msg.content || '').toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [messages, searchTerm]);
+
+  useEffect(() => {
+    if (!token) return;
+    getThreads(token).then((rows) => { setThreads(rows); if (!selectedThreadId && rows.length) setSelectedThreadId(rows[0].id); }).catch((e) => toast({ title: 'Failed to load threads', description: e.message, variant: 'destructive' }));
+  }, [token]);
+
+  useEffect(() => {
+    if (!token || !selectedThreadId) return;
+    getThread(token, selectedThreadId).then((res) => setMessages(res.messages)).catch((e) => toast({ title: 'Failed to load thread', description: e.message, variant: 'destructive' }));
+  }, [token, selectedThreadId]);
+
+  useEffect(() => {
+    const socket = getSocket();
+    if (user?.id) socket.emit('joinUser', user.id);
+    const msgHandler = (payload: { threadId: string; message: Message }) => {
+      if (payload.threadId === selectedThreadId) setMessages((prev) => [...prev, payload.message]);
+    };
+    const typingHandler = (payload: { threadId: string; userId: string; typing: boolean }) => {
+      if (payload.threadId === selectedThreadId && payload.userId !== user?.id) setIsTyping(payload.typing);
+    };
+    socket.on('message', msgHandler);
+    socket.on('typing', typingHandler);
+    return () => { socket.off('message', msgHandler); socket.off('typing', typingHandler); };
+  }, [selectedThreadId, user?.id]);
 
   return (
     <div className="flex min-h-screen bg-muted/30">
@@ -158,7 +116,7 @@ export default function TeacherMessages() {
                     <div className="space-y-4">
                       <div className="space-y-2">
                         <label className="text-sm font-medium">To</label>
-                        <Select>
+                        <Select onValueChange={(v) => setComposeRecipientRole(v as any)}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select recipient" />
                           </SelectTrigger>
@@ -166,25 +124,39 @@ export default function TeacherMessages() {
                             <SelectItem value="admin">School Administration</SelectItem>
                             <SelectItem value="parent">Parent</SelectItem>
                             <SelectItem value="teacher">Fellow Teacher</SelectItem>
+                            <SelectItem value="student">Student</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-medium">Subject</label>
-                        <Input placeholder="Enter message subject" />
+                        <Input placeholder="Enter message subject" value={composeSubject} onChange={(e) => setComposeSubject(e.target.value)} />
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-medium">Message</label>
                         <Textarea 
                           placeholder="Type your message here..."
                           rows={8}
+                          value={composeBody}
+                          onChange={(e) => { setComposeBody(e.target.value); if (selectedThreadId && user?.id) startTyping(selectedThreadId, user.id); }}
+                          onBlur={() => { if (selectedThreadId && user?.id) stopTyping(selectedThreadId, user.id); }}
                         />
                       </div>
                       <div className="flex justify-end space-x-2">
                         <Button variant="outline" onClick={() => setIsComposeOpen(false)}>
                           Cancel
                         </Button>
-                        <Button onClick={() => setIsComposeOpen(false)}>
+                        <Button onClick={async () => {
+                          if (!token || !composeRecipientRole || !user?.id || !composeBody.trim()) return;
+                          try {
+                            const threadId = await createThread(token, composeSubject || null, [{ id: user.id, role: 'teacher' }, { id: `${composeRecipientRole}-demo`, role: composeRecipientRole }]);
+                            setSelectedThreadId(threadId);
+                            const sent = await sendToThread(token, threadId, composeSubject || null, composeBody.trim());
+                            if (!Array.isArray(sent)) setMessages((prev) => [...prev, sent]);
+                            setComposeBody('');
+                            setIsComposeOpen(false);
+                          } catch (e: any) { toast({ title: 'Send failed', description: e.message, variant: 'destructive' }) }
+                        }}>
                           <Send className="h-4 w-4 mr-2" />
                           Send Message
                         </Button>
@@ -280,6 +252,7 @@ export default function TeacherMessages() {
           <Card className="border-0 shadow-elevation">
             <CardHeader>
               <CardTitle className="text-primary">Inbox</CardTitle>
+              {isTyping && <div className="text-xs text-muted-foreground">Recipient is typing…</div>}
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="all">
@@ -294,7 +267,7 @@ export default function TeacherMessages() {
                     <div
                       key={message.id}
                       className={`p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors ${
-                        !message.read ? 'bg-muted/30' : ''
+                        !message.read_at ? 'bg-muted/30' : ''
                       }`}
                       onClick={() => setSelectedMessage(message)}
                     >
@@ -302,27 +275,26 @@ export default function TeacherMessages() {
                         <div className="flex items-start space-x-4 flex-1">
                           <Avatar>
                             <AvatarFallback>
-                              {message.sender.charAt(0)}
+                              M
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1">
                             <div className="flex items-center space-x-2 mb-1">
-                              <h4 className={`font-medium ${!message.read ? 'text-primary' : ''}`}>
-                                {message.sender}
+                              <h4 className={`font-medium ${!message.read_at ? 'text-primary' : ''}`}>
+                                {message.subject || 'Conversation'}
                               </h4>
-                              {getRoleBadge(message.senderRole)}
-                              {message.starred && <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />}
+                              <Badge variant="outline" className="bg-green-100 text-green-800">Thread</Badge>
                             </div>
                             <h5 className={`text-sm mb-1 ${!message.read ? 'font-semibold' : ''}`}>
                               {message.subject}
                             </h5>
-                            <p className="text-sm text-muted-foreground">{message.preview}</p>
+                            <p className="text-sm text-muted-foreground">{message.content}</p>
                             <div className="flex items-center space-x-4 mt-2 text-xs text-muted-foreground">
                               <div className="flex items-center">
                                 <Clock className="h-3 w-3 mr-1" />
-                                {message.time}
+                                {new Date(message.created_at).toLocaleTimeString()}
                               </div>
-                              <span>{message.date}</span>
+                              <span>{new Date(message.created_at).toLocaleDateString()}</span>
                             </div>
                           </div>
                         </div>
@@ -357,16 +329,16 @@ export default function TeacherMessages() {
                   <div className="flex items-center space-x-3">
                     <Avatar>
                       <AvatarFallback>
-                        {selectedMessage.sender.charAt(0)}
+                        M
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
                       <div className="flex items-center space-x-2">
-                        <h4 className="font-medium">{selectedMessage.sender}</h4>
-                        {getRoleBadge(selectedMessage.senderRole)}
+                        <h4 className="font-medium">{selectedMessage.subject || 'Conversation'}</h4>
+                        <Badge variant="outline">Message</Badge>
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        {selectedMessage.date} at {selectedMessage.time}
+                        {new Date(selectedMessage.created_at).toLocaleString()}
                       </p>
                     </div>
                   </div>
@@ -374,11 +346,11 @@ export default function TeacherMessages() {
                     <p>{selectedMessage.content}</p>
                   </div>
                   <div className="flex justify-end space-x-2">
-                    <Button variant="outline">
+                    <Button variant="outline" onClick={async () => { if (!token) return; try { await archiveThread(token, selectedThreadId!); toast({ title: 'Archived' }); } catch (e:any) { toast({ title: 'Archive failed', description: e.message, variant: 'destructive' }) } }}>
                       <Archive className="h-4 w-4 mr-2" />
                       Archive
                     </Button>
-                    <Button>
+                    <Button onClick={async () => { if (!token || !selectedThreadId) return; try { const sent = await sendToThread(token, selectedThreadId, selectedMessage.subject || null, 'Thanks for your message'); if (!Array.isArray(sent)) setMessages((prev) => [...prev, sent]); } catch (e:any) { toast({ title: 'Reply failed', description: e.message, variant: 'destructive' }) } }}>
                       <Send className="h-4 w-4 mr-2" />
                       Reply
                     </Button>

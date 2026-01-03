@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   BookOpen,
   CreditCard,
@@ -16,13 +16,18 @@ import {
   Calendar
 } from 'lucide-react';
 import DashboardSidebar from '@/components/DashboardSidebar';
+import { useEffect, useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 export default function StudentDashboard() {
-  const studentData = {
+  const navigate = useNavigate();
+  const [isNavigating, setIsNavigating] = useState(false);
+  const { toast } = useToast();
+  const [studentData, setStudentData] = useState({
     name: "Ahmad Musa",
     class: "SS3 A",
     rollNumber: "STU/2024/001",
-    avatar: "/placeholder.svg", // Placeholder for student photo
+    avatar: "/placeholder.svg",
     email: "ahmad.musa@darularkam.edu.ng",
     phone: "+234 801 234 5678",
     address: "123 Harmony Street, Lagos, Nigeria",
@@ -36,7 +41,22 @@ export default function StudentDashboard() {
     classRank: 2,
     attendance: 95,
     pendingFees: 25000
-  };
+  });
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('student_profile');
+      if (!raw) return;
+      const p = JSON.parse(raw) as { photoUrl?: string; phone?: string; address?: string; guardianPhone?: string };
+      setStudentData(prev => ({
+        ...prev,
+        avatar: p.photoUrl || prev.avatar,
+        phone: p.phone || prev.phone,
+        address: p.address || prev.address,
+        guardianPhone: p.guardianPhone || prev.guardianPhone,
+      }));
+    } catch {}
+  }, []);
 
   const quickActions = [
     {
@@ -73,13 +93,13 @@ export default function StudentDashboard() {
       <DashboardSidebar userType="student" />
       
       <main className="flex-1 overflow-auto">
-        <div className="p-6 space-y-6">
+        <div className="responsive-div p-6 space-y-6">
           {/* Student Profile */}
           <Card className="border-0 shadow-elevation animate-fade-in">
             <CardContent className="p-6">
               <div className="flex items-center space-x-6">
-                <Avatar className="h-20 w-20">
-                  <AvatarImage src={studentData.avatar} alt={studentData.name} />
+                <Avatar className="h-20 w-20 sm:h-24 sm:w-24 md:h-28 md:w-28">
+                  <AvatarImage src={studentData.avatar} alt={studentData.name} className="object-cover" />
                   <AvatarFallback className="text-lg">{studentData.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
@@ -87,27 +107,46 @@ export default function StudentDashboard() {
                   <p className="text-muted-foreground mb-2">
                     {studentData.class} • Roll No: {studentData.rollNumber}
                   </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                    <div className="flex items-center space-x-2">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <span>{studentData.email}</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-3 md:gap-4 text-xs sm:text-sm md:text-base">
+                    <div className="flex items-start sm:items-center space-x-2 md:space-x-3 min-w-0">
+                      <Mail className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground shrink-0" />
+                      <span className="truncate sm:truncate md:whitespace-normal">{studentData.email}</span>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Phone className="h-4 w-4 text-muted-foreground" />
-                      <span>{studentData.phone}</span>
+                    <div className="flex items-start sm:items-center space-x-2 md:space-x-3 min-w-0">
+                      <Phone className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground shrink-0" />
+                      <span className="truncate sm:truncate md:whitespace-normal">{studentData.phone}</span>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                      <span>{studentData.address}</span>
+                    <div className="flex items-start sm:items-center space-x-2 md:space-x-3 min-w-0">
+                      <MapPin className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground shrink-0" />
+                      <span className="truncate sm:truncate md:whitespace-normal">{studentData.address}</span>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span>DOB: {new Date(studentData.dateOfBirth).toLocaleDateString()}</span>
+                    <div className="flex items-start sm:items-center space-x-2 md:space-x-3 min-w-0">
+                      <Calendar className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground shrink-0" />
+                      <span className="truncate sm:truncate md:whitespace-normal">DOB: {new Date(studentData.dateOfBirth).toLocaleDateString()}</span>
                     </div>
                   </div>
                 </div>
-                <Button variant="outline" size="sm">
-                  Edit Profile
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  aria-label="Edit profile"
+                  aria-busy={isNavigating}
+                  aria-disabled={isNavigating}
+                  disabled={isNavigating}
+                  onClick={async () => {
+                    try {
+                      setIsNavigating(true);
+                      navigate('/dashboard/student/profile');
+                    } catch (err) {
+                      const msg = err instanceof Error ? err.message : 'Unable to open profile';
+                      toast({ title: 'Navigation error', description: msg, variant: 'destructive' });
+                    } finally {
+                      setIsNavigating(false);
+                    }
+                  }}
+                >
+                  {isNavigating ? 'Opening…' : 'Edit Profile'}
                 </Button>
               </div>
             </CardContent>

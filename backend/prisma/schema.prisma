@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Event {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  event_date  DateTime
+  location    String?
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@index([event_date])
+}
+
+model MessageThread {
+  id             String               @id @default(uuid())
+  subject        String?
+  lastMessageAt  DateTime             @default(now()) @map("last_message_at")
+  participants   MessageParticipant[]
+  messages       Message[]
+  archives       MessageArchive[]
+
+  @@map("message_threads")
+  @@index([lastMessageAt])
+}
+
+model MessageParticipant {
+  threadId String @map("thread_id")
+  userId   String @map("user_id")
+  role     String
+  thread   MessageThread @relation(fields: [threadId], references: [id])
+
+  @@id([threadId, userId])
+  @@map("message_participants")
+}
+
+model Message {
+  id          String         @id @default(uuid())
+  threadId    String         @map("thread_id")
+  thread      MessageThread  @relation(fields: [threadId], references: [id])
+  fromUserId  String         @map("from_user_id")
+  fromRole    String         @map("from_role")
+  toUserId    String         @map("to_user_id")
+  toRole      String         @map("to_role")
+  subject     String?        @map("subject")
+  content     String         @map("content")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  deliveredAt DateTime?      @map("delivered_at")
+  readAt      DateTime?      @map("read_at")
+  attachments MessageAttachment[]
+  flags       MessageFlag[]
+
+  @@map("messages")
+  @@index([threadId])
+}
+
+model MessageAttachment {
+  id         String   @id @default(uuid())
+  messageId  String   @map("message_id")
+  message    Message  @relation(fields: [messageId], references: [id])
+  filename   String
+  mime       String
+  sizeBytes  Int      @map("size_bytes")
+  path       String
+  uploadedAt DateTime @default(now()) @map("uploaded_at")
+
+  @@map("message_attachments")
+}
+
+model MessageFlag {
+  userId    String  @map("user_id")
+  messageId String  @map("message_id")
+  message   Message @relation(fields: [messageId], references: [id])
+  flaggedAt DateTime @default(now()) @map("flagged_at")
+
+  @@id([userId, messageId])
+  @@map("message_flags")
+}
+
+model MessageArchive {
+  userId     String        @map("user_id")
+  threadId   String        @map("thread_id")
+  thread     MessageThread @relation(fields: [threadId], references: [id])
+  archivedAt DateTime      @default(now()) @map("archived_at")
+
+  @@id([userId, threadId])
+  @@map("message_archives")
+}
+
+model MessageAudit {
+  id          String   @id @default(uuid())
+  actorUserId String   @map("actor_user_id")
+  action      String
+  messageId   String?  @map("message_id")
+  threadId    String?  @map("thread_id")
+  metadata    Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("message_audit")
+}
+
+model UserPresence {
+  userId   String   @id @map("user_id")
+  role     String
+  classId  String?  @map("class_id")
+  isOnline Boolean  @default(false) @map("is_online")
+  lastSeen DateTime @default(now()) @map("last_seen")
+
+  @@map("user_presence")
+}

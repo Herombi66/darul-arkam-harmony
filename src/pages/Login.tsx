@@ -9,85 +9,64 @@ import { ArrowLeft, LogIn } from 'lucide-react';
 import schoolLogo from '@/assets/school-logo.png';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+// Removed role selection UI, so remove Select imports
 
 export default function Login() {
-  const [credentials, setCredentials] = useState({
-    username: '',
-    password: ''
-  });
+  // Removed role selection; role will be auto-detected by backend
+  // const [role, setRole] = useState<'student' | 'teacher' | 'parent' | 'admin' | 'exams-officer' | 'admission-officer' | 'finance-officer' | 'media-officer'>('student');
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
   const { login } = useAuth();
 
-  // Mock user database with credentials
-  const mockUsers = [
-    { username: 'STU123', password: 'student123', role: 'student' },
-    { username: 'TCH123', password: 'teacher123', role: 'teacher' },
-    { username: 'PAR123', password: 'parent123', role: 'parent' },
-    { username: 'ADM123', password: 'admin123', role: 'admin' },
-    { username: 'EXM123', password: 'exams123', role: 'exams-officer' },
-    { username: 'ADO123', password: 'admission123', role: 'admission-officer' },
-    { username: 'FIN123', password: 'finance123', role: 'finance-officer' },
-    { username: 'MED123', password: 'media123', role: 'media-officer' },
-  ];
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001';
 
-  const detectUserRole = (username: string) => {
-    // Auto-detect role based on ID format
-    if (username.startsWith('STU')) return 'student';
-    if (username.startsWith('TCH')) return 'teacher';
-    if (username.startsWith('PAR')) return 'parent';
-    if (username.startsWith('ADM')) return 'admin';
-    if (username.startsWith('EXM')) return 'exams-officer';
-    if (username.startsWith('ADO')) return 'admission-officer';
-    if (username.startsWith('FIN')) return 'finance-officer';
-    if (username.startsWith('MED')) return 'media-officer';
-    return 'student'; // default
-  };
-
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-
-    // Find user in mock database
-    const user = mockUsers.find(user => user.username === credentials.username);
-    
-    // Validate credentials
-    if (!user || user.password !== credentials.password) {
-      setError('Invalid username or password');
-      toast({
-        title: "Login Failed",
-        description: "Invalid username or password. Please try again.",
-        variant: "destructive"
+    setLoading(true);
+    try {
+      const res = await fetch(`${backendUrl}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        // Send only identifier and password; backend auto-detects role
+        body: JSON.stringify({ identifier, password }),
       });
-      return;
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.message || 'Login failed');
+      }
+      // Use role returned from server
+      const roleFromServer = (data?.user?.role ?? 'student') as
+        'student' | 'teacher' | 'parent' | 'admin' | 'exams-officer' | 'admission-officer' | 'finance-officer' | 'media-officer';
+      login({ token: data.token, role: roleFromServer, user: data.user });
+      localStorage.setItem('username', identifier);
+      toast({ title: 'Login Successful!', description: `Welcome to your dashboard.` });
+      const routes = {
+        student: '/dashboard/student',
+        teacher: '/dashboard/teacher',
+        parent: '/dashboard/parent',
+        admin: '/dashboard/admin',
+        'exams-officer': '/dashboard/exams-officer',
+        'admission-officer': '/dashboard/admission-officer',
+        'finance-officer': '/dashboard/finance-officer',
+        'media-officer': '/dashboard/media-officer',
+      } as const;
+      navigate(routes[roleFromServer] || '/dashboard/student');
+    } catch (err: any) {
+      setError(err.message);
+      toast({ title: 'Login Failed', description: err.message, variant: 'destructive' });
+    } finally {
+      setLoading(false);
     }
-
-    // Login user with the role
-    login(user.role as 'student' | 'teacher' | 'parent' | 'admin' | 'exams-officer' | 'admission-officer' | 'finance-officer' | 'media-officer');
-    
-    // Store username in localStorage for reference
-    localStorage.setItem('username', credentials.username);
-
-    toast({
-      title: "Login Successful!",
-      description: `Welcome to your dashboard.`,
-    });
-
-    // Redirect based on detected user type
-    const dashboardRoutes = {
-      student: '/dashboard/student',
-      teacher: '/dashboard/teacher',
-      parent: '/dashboard/parent',
-      admin: '/dashboard/admin',
-      'exams-officer': '/dashboard/exams-officer',
-      'admission-officer': '/dashboard/admission-officer',
-      'finance-officer': '/dashboard/finance-officer',
-      'media-officer': '/dashboard/media-officer'
-    };
-
-    navigate(dashboardRoutes[userType as keyof typeof dashboardRoutes] || '/dashboard/student');
   };
+
+  // Use generic labels since role is auto-detected on backend
+  const identifierLabel = 'Email or ID';
+  const identifierPlaceholder = 'Enter email, roll number, or ID number';
 
   return (
     <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
@@ -117,19 +96,41 @@ export default function Login() {
 
           <CardContent className="space-y-6">
             <form onSubmit={handleLogin} className="space-y-4">
+              {/* Removed manual role selection */}
+              {/*
               <div className="space-y-2">
-                <Label htmlFor="username">Username / ID Number</Label>
+                <Label htmlFor="role">Select Role</Label>
+                <Select value={role} onValueChange={(v) => setRole(v as typeof role)}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="student">Student</SelectItem>
+                    <SelectItem value="teacher">Teacher</SelectItem>
+                    <SelectItem value="parent">Parent</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="exams-officer">Exams Officer</SelectItem>
+                    <SelectItem value="admission-officer">Admission Officer</SelectItem>
+                    <SelectItem value="finance-officer">Finance Officer</SelectItem>
+                    <SelectItem value="media-officer">Media Officer</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              */}
+
+              <div className="space-y-2">
+                <Label htmlFor="identifier">{identifierLabel}</Label>
                 <Input
-                  id="username"
+                  id="identifier"
                   type="text"
-                  placeholder="Enter your email or ID Number"
-                  value={credentials.username}
-                  onChange={(e) => setCredentials({...credentials, username: e.target.value})}
+                  placeholder={identifierPlaceholder}
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
                   required
                 />
-                {/* <p className="text-xs text-muted-foreground">
-                  Your role will be detected automatically based on your ID
-                </p> */}
+                <p className="text-xs text-muted-foreground">
+                  You can use your email, roll number (students), or ID number (teachers).
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -138,16 +139,17 @@ export default function Login() {
                   id="password"
                   type="password"
                   placeholder="Enter your password"
-                  value={credentials.password}
-                  onChange={(e) => setCredentials({...credentials, password: e.target.value})}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   required
                 />
               </div>
 
-              <Button type="submit" variant="hero" size="lg" className="w-full">
+              <Button type="submit" variant="hero" size="lg" className="w-full" disabled={loading}>
                 <LogIn className="h-4 w-4 mr-2" />
-                Login to Dashboard
+                {loading ? 'Logging in...' : 'Login to Dashboard'}
               </Button>
+              {error && <div className="text-red-500 text-sm">{error}</div>}
             </form>
 
             <div className="text-center space-y-2">

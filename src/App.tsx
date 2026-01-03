@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -55,73 +55,135 @@ import AdminEvents from "./pages/dashboards/AdminEvents";
 import AdminMessages from "./pages/dashboards/AdminMessages";
 import AdminSupport from "./pages/dashboards/AdminSupport";
 import NotFound from "./pages/NotFound";
+import { useEffect } from "react";
+import { io } from "socket.io-client";
+import { useToast } from "@/hooks/use-toast";
+import { ThemeProvider } from "next-themes";
+import NetworkGate from "@/components/NetworkGate";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/gallery" element={<Gallery />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/admission" element={<Admission />} />
-            <Route path="/dashboard/student" element={<StudentDashboard />} />
-            <Route path="/dashboard/student/profile" element={<StudentProfile />} />
-            <Route path="/dashboard/student/academics" element={<StudentAcademics />} />
-            <Route path="/dashboard/student/academics/subjects" element={<StudentSubjects />} />
-            <Route path="/dashboard/student/academics/assignments" element={<StudentAssignments />} />
-            <Route path="/dashboard/student/academics/results" element={<StudentResults />} />
-            <Route path="/dashboard/student/payments/pay" element={<PaySchoolFees />} />
-            <Route path="/dashboard/student/payments/history" element={<PaymentHistory />} />
-            <Route path="/dashboard/student/attendance/records" element={<AttendanceRecords />} />
-            <Route path="/dashboard/student/attendance/request-leave" element={<RequestLeave />} />
-            <Route path="/dashboard/student/events" element={<StudentEvents />} />
-            <Route path="/dashboard/student/messages" element={<StudentMessages />} />
-            <Route path="/dashboard/student/support" element={<StudentSupport />} />
-            <Route path="/dashboard/teacher" element={<ProtectedRoute allowedRoles={['teacher']}><TeacherDashboard /></ProtectedRoute>} />
-            <Route path="/dashboard/teacher/profile" element={<ProtectedRoute allowedRoles={['teacher']}><TeacherProfile /></ProtectedRoute>} />
-            <Route path="/dashboard/teacher/subjects" element={<ProtectedRoute allowedRoles={['teacher']}><TeacherSubjects /></ProtectedRoute>} />
-            <Route path="/dashboard/teacher/subjects/:subject" element={<ProtectedRoute allowedRoles={['teacher']}><TeacherSubjectDetails /></ProtectedRoute>} />
-            <Route path="/dashboard/teacher/classes" element={<ProtectedRoute allowedRoles={['teacher']}><TeacherClasses /></ProtectedRoute>} />
-            <Route path="/dashboard/teacher/assignments" element={<ProtectedRoute allowedRoles={['teacher']}><TeacherAssignments /></ProtectedRoute>} />
-            <Route path="/dashboard/teacher/attendance" element={<ProtectedRoute allowedRoles={['teacher']}><TeacherAttendance /></ProtectedRoute>} />
-            <Route path="/dashboard/teacher/record-sheet" element={<ProtectedRoute allowedRoles={['teacher']}><TeacherRecordSheet /></ProtectedRoute>} />
-            <Route path="/dashboard/teacher/events" element={<ProtectedRoute allowedRoles={['teacher']}><TeacherEvents /></ProtectedRoute>} />
-            <Route path="/dashboard/teacher/messages" element={<ProtectedRoute allowedRoles={['teacher']}><TeacherMessages /></ProtectedRoute>} />
-            <Route path="/dashboard/teacher/support" element={<ProtectedRoute allowedRoles={['teacher']}><TeacherSupport /></ProtectedRoute>} />
-            <Route path="/dashboard/parent" element={<ParentDashboard />} />
-            <Route path="/dashboard/parent/profile" element={<Profile />} />
-            <Route path="/dashboard/parent/children" element={<Children />} />
-            <Route path="/dashboard/parent/payments" element={<Payments />} />
-            <Route path="/dashboard/parent/events" element={<Events />} />
-            <Route path="/dashboard/parent/messages" element={<Messages />} />
-            <Route path="/dashboard/parent/support" element={<Support />} />
-            <Route path="/dashboard/exams-officer" element={<ExamsOfficerDashboard />} />
-            <Route path="/dashboard/admission-officer" element={<AdmissionOfficerDashboard />} />
-            <Route path="/dashboard/finance-officer" element={<FinanceOfficerDashboard />} />
-            <Route path="/dashboard/media-officer" element={<MediaOfficerDashboard />} />
-            <Route path="/dashboard/admin" element={<AdminDashboard />} />
-            <Route path="/dashboard/admin/profile" element={<AdminProfile />} />
-            <Route path="/dashboard/admin/users" element={<AdminUsers />} />
-            <Route path="/dashboard/admin/academics" element={<AdminAcademics />} />
-            <Route path="/dashboard/admin/finance" element={<AdminFinance />} />
-            <Route path="/dashboard/admin/events" element={<AdminEvents />} />
-            <Route path="/dashboard/admin/messages" element={<AdminMessages />} />
-            <Route path="/dashboard/admin/support" element={<AdminSupport />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
-);
+const SocketInitializer: React.FC = () => {
+  const { toast } = useToast();
+  const { isAuthenticated, user } = useAuth();
+
+  useEffect(() => {
+    const socket = io(import.meta.env.VITE_BACKEND_URL || "http://localhost:5001", {
+      transports: ["websocket", "polling"],
+      reconnection: true,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000,
+    });
+
+    socket.on("connect", () => {
+      console.log("Socket connected", socket.id);
+      if (isAuthenticated && user?.id) {
+        socket.emit("joinUser", user.id);
+      }
+    });
+
+    socket.on("notification", (payload: { type: string; message: string; timestamp: string }) => {
+      toast({
+        title: payload.type === "system" ? "System" : "Notification",
+        description: payload.message,
+      });
+    });
+
+    socket.on("message", (payload: { threadId: string; message: any }) => {
+      toast({ title: "New Message", description: payload.message?.content || "You have a new message" });
+      try { socket.emit("message:ack", { messageId: payload?.message?.id }); } catch {}
+    });
+
+    socket.on("disconnect", (reason) => {
+      console.log("Socket disconnected:", reason);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [toast, isAuthenticated, user?.id]);
+
+  return null;
+};
+
+const App = () => {
+  const DevThrow: React.FC = () => { throw new Error('Test render error') };
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <ErrorBoundary>
+              <NetworkGate>
+                <BrowserRouter>
+                  <SocketInitializer />
+                  <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/gallery" element={<Gallery />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/admission" element={<Admission />} />
+                <Route path="/dashboard/student" element={<StudentDashboard />} />
+                <Route path="/dashboard/student/profile" element={<StudentProfile />} />
+                <Route path="/dashboard/student/academics" element={<StudentAcademics />} />
+                <Route path="/dashboard/student/academics/subjects" element={<StudentSubjects />} />
+                <Route path="/dashboard/student/academics/assignments" element={<StudentAssignments />} />
+                <Route path="/dashboard/student/academics/results" element={<StudentResults />} />
+                <Route path="/dashboard/student/payments/pay" element={<PaySchoolFees />} />
+                <Route path="/dashboard/student/payments/history" element={<PaymentHistory />} />
+                <Route path="/dashboard/student/attendance/records" element={<AttendanceRecords />} />
+                <Route path="/dashboard/student/attendance/request-leave" element={<RequestLeave />} />
+                <Route path="/dashboard/student/events" element={<StudentEvents />} />
+                <Route path="/dashboard/student/messages" element={<StudentMessages />} />
+                <Route path="/dashboard/student/support" element={<StudentSupport />} />
+                <Route path="/dashboard/teacher" element={<ProtectedRoute allowedRoles={["teacher"]}><TeacherDashboard /></ProtectedRoute>} />
+                <Route path="/dashboard/teacher/profile" element={<ProtectedRoute allowedRoles={["teacher"]}><TeacherProfile /></ProtectedRoute>} />
+                <Route path="/dashboard/teacher/subjects" element={<ProtectedRoute allowedRoles={["teacher"]}><TeacherSubjects /></ProtectedRoute>} />
+                <Route path="/dashboard/teacher/subjects/:subject" element={<ProtectedRoute allowedRoles={["teacher"]}><TeacherSubjectDetails /></ProtectedRoute>} />
+                <Route path="/dashboard/teacher/classes" element={<ProtectedRoute allowedRoles={["teacher"]}><TeacherClasses /></ProtectedRoute>} />
+                <Route path="/dashboard/teacher/assignments" element={<ProtectedRoute allowedRoles={["teacher"]}><TeacherAssignments /></ProtectedRoute>} />
+                <Route path="/dashboard/teacher/attendance" element={<ProtectedRoute allowedRoles={["teacher"]}><TeacherAttendance /></ProtectedRoute>} />
+                <Route path="/dashboard/teacher/record-sheet" element={<ProtectedRoute allowedRoles={["teacher"]}><TeacherRecordSheet /></ProtectedRoute>} />
+                <Route path="/dashboard/teacher/events" element={<ProtectedRoute allowedRoles={["teacher"]}><TeacherEvents /></ProtectedRoute>} />
+                <Route path="/dashboard/teacher/messages" element={<ProtectedRoute allowedRoles={["teacher"]}><TeacherMessages /></ProtectedRoute>} />
+                <Route path="/dashboard/teacher/support" element={<ProtectedRoute allowedRoles={["teacher"]}><TeacherSupport /></ProtectedRoute>} />
+                <Route path="/dashboard/parent" element={<ParentDashboard />} />
+                <Route path="/dashboard/parent/profile" element={<Profile />} />
+                <Route path="/dashboard/parent/children" element={<Children />} />
+                <Route path="/dashboard/parent/payments" element={<Payments />} />
+                <Route path="/dashboard/parent/events" element={<Events />} />
+                <Route path="/dashboard/parent/messages" element={<Messages />} />
+                <Route path="/dashboard/parent/support" element={<Support />} />
+                <Route path="/dashboard/exams-officer" element={<ExamsOfficerDashboard />} />
+                <Route path="/dashboard/admission-officer" element={<AdmissionOfficerDashboard />} />
+                <Route path="/dashboard/finance-officer" element={<FinanceOfficerDashboard />} />
+                <Route path="/dashboard/media-officer" element={<MediaOfficerDashboard />} />
+                <Route path="/dashboard/admin" element={<AdminDashboard />} />
+                <Route path="/dashboard/admin/profile" element={<AdminProfile />} />
+                <Route path="/dashboard/admin/users" element={<AdminUsers />} />
+                <Route path="/dashboard/admin/academics" element={<AdminAcademics />} />
+                <Route path="/dashboard/admin/finance" element={<AdminFinance />} />
+                <Route path="/dashboard/admin/events" element={<AdminEvents />} />
+                <Route path="/dashboard/admin/messages" element={<AdminMessages />} />
+                <Route path="/dashboard/admin/support" element={<AdminSupport />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+                  </Routes>
+                  <Routes>
+                    <Route path="/__throw" element={<DevThrow />} />
+                  </Routes>
+                </BrowserRouter>
+              </NetworkGate>
+            </ErrorBoundary>
+          </TooltipProvider>
+        </ThemeProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;

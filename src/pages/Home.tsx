@@ -35,14 +35,14 @@ export default function Home() {
       
       {/* Hero Section */}
       <section className="py-12">
-        <div className="container mx-auto px-4">
+        <div className="responsive-div container mx-auto px-4">
           <ImageSlider />
         </div>
       </section>
 
       {/* Welcome Section */}
       <section className="py-16 bg-muted/30">
-        <div className="container mx-auto px-4 text-center">
+        <div className="responsive-div container mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-primary mb-6 animate-fade-in">
             Welcome to Our Academic Community
           </h2>
@@ -90,7 +90,7 @@ export default function Home() {
 
       {/* CTA Section */}
       <section className="py-16 bg-gradient-hero">
-        <div className="container mx-auto px-4 text-center">
+        <div className="responsive-div container mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 animate-fade-in">
             Join Our Academic Excellence
           </h2>
@@ -113,7 +113,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="bg-primary text-primary-foreground py-8">
-        <div className="container mx-auto px-4 text-center">
+        <div className="responsive-div container mx-auto px-4 text-center">
           <p className="text-lg font-medium mb-2">Darul Arqam Academy Gombe</p>
           <p className="text-primary-foreground/80">
             Building Excellence in Islamic Education Since Our Foundation

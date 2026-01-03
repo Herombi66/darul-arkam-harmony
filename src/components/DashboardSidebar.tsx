@@ -155,7 +155,7 @@ export default function DashboardSidebar({ userType }: DashboardSidebarProps) {
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const location = useLocation();
   const navigate = useNavigate();
-  const { logout, user } = useAuth();
+  const { logout } = useAuth();
 
   const items = sidebarItems[userType] || sidebarItems.student;
 

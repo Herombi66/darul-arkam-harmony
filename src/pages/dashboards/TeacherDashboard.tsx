@@ -13,30 +13,61 @@ import {
   UserCheck
 } from 'lucide-react';
 import DashboardSidebar from '@/components/DashboardSidebar';
+import { useAuth } from '@/contexts/AuthContext';
+import { getSocket } from '@/services/messages';
+
+const API_BASE = import.meta.env.VITE_BACKEND_URL ? import.meta.env.VITE_BACKEND_URL : ''
 
 export default function TeacherDashboard() {
-  const teacherData = {
-    name: "Mrs. Fatima Ibrahim",
-    id: "TCH/2024/001",
-    subjects: ["Mathematics", "Physics"],
-    isFormMaster: true,
-    formClass: "SS2 A",
-    totalStudents: 45,
-    pendingAssignments: 8,
-    todayClasses: 4
-  };
+  const { user, token } = useAuth();
+  const [profile, setProfile] = useState<{ name: string; id: string; isFormMaster?: boolean; formClass?: string } | null>(null)
+  const [subjects, setSubjects] = useState<{ subject: string; classes: string[] }[]>([])
+  const [overview, setOverview] = useState<{ subjectsTeaching: number; totalStudents: number; pendingAssignments: number; todayClasses: number } | null>(null)
+  const [schedule, setSchedule] = useState<{ subject: string; class: string; start: string; end: string }[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const [subjects, setSubjects] = useState(teacherData.subjects);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  async function fetchAll() {
+    if (!user || !token) return
+    try {
+      setError(null)
+      const id = user.id
+      const headers = { Authorization: `Bearer ${token}` }
+      const [ovRes, subjRes, schedRes] = await Promise.all([
+        fetch(`${API_BASE}/api/teacher/${id}/overview`, { headers }),
+        fetch(`${API_BASE}/api/teacher/${id}/subjects`, { headers }),
+        fetch(`${API_BASE}/api/teacher/${id}/schedule/today`, { headers }),
+      ])
+      const ovJson = await ovRes.json()
+      const subjJson = await subjRes.json()
+      const schedJson = await schedRes.json()
+      if (!ovRes.ok) throw new Error(ovJson.message || 'Failed to load overview')
+      if (!subjRes.ok) throw new Error(subjJson.message || 'Failed to load subjects')
+      if (!schedRes.ok) throw new Error(schedJson.message || 'Failed to load schedule')
+      setOverview(ovJson.data)
+      setSubjects(subjJson.data)
+      setSchedule(schedJson.data)
+      setProfile({ name: user.name || 'Teacher', id: user.id_number || user.id, isFormMaster: true, formClass: 'SS2 A' })
+    } catch (e: any) {
+      setError(e?.message || 'Failed to load dashboard')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { fetchAll() }, [user?.id, token])
 
   useEffect(() => {
-    // Simulate loading delay for consistency
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, []);
+    const socket = getSocket()
+    if (user?.id) socket.emit('joinTeacher', { teacherId: user.id })
+    const onAssign = (payload: any) => { setOverview((prev) => prev ? { ...prev, pendingAssignments: payload.pendingAssignments ?? prev.pendingAssignments } : prev) }
+    const onAttend = (payload: any) => { setOverview((prev) => prev ? { ...prev, totalStudents: payload.totalStudents ?? prev.totalStudents } : prev) }
+    const onTimetable = (payload: any) => { if (Array.isArray(payload.today)) setSchedule(payload.today) }
+    socket.on('assignments:update', onAssign)
+    socket.on('attendance:update', onAttend)
+    socket.on('timetable:update', onTimetable)
+    return () => { socket.off('assignments:update', onAssign); socket.off('attendance:update', onAttend); socket.off('timetable:update', onTimetable) }
+  }, [user?.id])
 
   const quickActions = [
     {
@@ -77,9 +108,9 @@ export default function TeacherDashboard() {
         <div className="p-6 space-y-6">
           {/* Welcome Header */}
           <div className="animate-fade-in">
-            <h1 className="text-3xl font-bold text-primary">Welcome back, {teacherData.name}!</h1>
+            <h1 className="text-3xl font-bold text-primary">Welcome back, {profile?.name || 'Teacher'}!</h1>
             <p className="text-muted-foreground">
-              ID: {teacherData.id} • {teacherData.isFormMaster ? `Form Master - ${teacherData.formClass}` : 'Subject Teacher'}
+              ID: {profile?.id || user?.id} • {profile?.isFormMaster ? `Form Master - ${profile?.formClass}` : 'Subject Teacher'}
             </p>
           </div>
 
@@ -93,7 +124,7 @@ export default function TeacherDashboard() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Subjects Teaching</p>
-                    <p className="text-2xl font-bold text-primary">{subjects.length}</p>
+                    <p className="text-2xl font-bold text-primary">{overview?.subjectsTeaching ?? 0}</p>
                   </div>
                 </div>
               </CardContent>
@@ -107,7 +138,7 @@ export default function TeacherDashboard() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Total Students</p>
-                    <p className="text-2xl font-bold text-primary">{teacherData.totalStudents}</p>
+                    <p className="text-2xl font-bold text-primary">{overview?.totalStudents ?? 0}</p>
                   </div>
                 </div>
               </CardContent>
@@ -121,7 +152,7 @@ export default function TeacherDashboard() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Pending Assignments</p>
-                    <p className="text-2xl font-bold text-primary">{teacherData.pendingAssignments}</p>
+                    <p className="text-2xl font-bold text-primary">{overview?.pendingAssignments ?? 0}</p>
                   </div>
                 </div>
               </CardContent>
@@ -135,7 +166,7 @@ export default function TeacherDashboard() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Today's Classes</p>
-                    <p className="text-2xl font-bold text-primary">{teacherData.todayClasses}</p>
+                    <p className="text-2xl font-bold text-primary">{overview?.todayClasses ?? 0}</p>
                   </div>
                 </div>
               </CardContent>
@@ -184,11 +215,11 @@ export default function TeacherDashboard() {
                     <div className="text-center py-4 text-red-600">Error: {error}</div>
                   ) : (
                     <div className="grid grid-cols-2 gap-4">
-                      {subjects.map((subject, index) => (
-                        <Link key={index} to={`/dashboard/teacher/subjects/${subject}`}>
+                      {subjects.map((s, index) => (
+                        <Link key={index} to={`/dashboard/teacher/subjects/${s.subject}`}>
                           <div className="p-4 bg-gradient-primary rounded-lg text-white hover:opacity-90 transition-opacity cursor-pointer">
-                            <h3 className="font-semibold">{subject}</h3>
-                            <p className="text-sm opacity-90">Multiple Classes</p>
+                            <h3 className="font-semibold">{s.subject}</h3>
+                            <p className="text-sm opacity-90">{s.classes.join(', ')}</p>
                           </div>
                         </Link>
                       ))}
@@ -208,14 +239,14 @@ export default function TeacherDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {todaySchedule.map((schedule, index) => (
+                  {(loading ? [] : schedule).map((sch, index) => (
                     <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                       <div>
-                        <p className="font-medium text-sm">{schedule.subject}</p>
-                        <p className="text-xs text-muted-foreground">{schedule.class}</p>
+                        <p className="font-medium text-sm">{sch.subject}</p>
+                        <p className="text-xs text-muted-foreground">{sch.class}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-xs font-medium text-primary">{schedule.time}</p>
+                        <p className="text-xs font-medium text-primary">{new Date(sch.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(sch.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                       </div>
                     </div>
                   ))}

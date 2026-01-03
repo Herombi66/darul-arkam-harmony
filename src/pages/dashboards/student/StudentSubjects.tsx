@@ -5,6 +5,8 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DashboardSidebar from '@/components/DashboardSidebar';
 import { BookOpen, User, Calendar, TrendingUp, FileText, Clock } from 'lucide-react';
+import { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 const subjects = [
   {
@@ -99,6 +101,25 @@ const getProgressColor = (progress: number) => {
 };
 
 export default function StudentSubjects() {
+  const [detailOpen, setDetailOpen] = useState(false);
+  type SubjectItem = typeof subjects[number];
+  const [detailSubject, setDetailSubject] = useState<SubjectItem | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState<string | null>(null);
+
+  const openSubjectDetail = async (subject: SubjectItem) => {
+    try {
+      setDetailLoading(true);
+      setDetailError(null);
+      setDetailSubject(subject);
+      setDetailOpen(true);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Unable to open subject details';
+      setDetailError(msg);
+    } finally {
+      setDetailLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen bg-background flex">
       <DashboardSidebar userType="student" />
@@ -111,10 +132,8 @@ export default function StudentSubjects() {
           </div>
 
           <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-1">
               <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="science">Science Subjects</TabsTrigger>
-              <TabsTrigger value="others">Other Subjects</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-6">
@@ -146,15 +165,14 @@ export default function StudentSubjects() {
                 </CardContent>
               </Card>
 
-              {/* All Subjects Grid */}
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 {subjects.map((subject) => (
                   <Card key={subject.id} className="hover:shadow-lg transition-shadow">
                     <CardHeader>
                       <div className="flex items-center justify-between">
                         <div>
-                          <CardTitle className="text-lg">{subject.name}</CardTitle>
-                          <CardDescription>{subject.code}</CardDescription>
+                          <CardTitle className="text-base sm:text-lg">{subject.name}</CardTitle>
+                          <CardDescription className="text-xs sm:text-sm">{subject.code}</CardDescription>
                         </div>
                         <Badge className={getStatusColor(subject.status)}>
                           {subject.grade}
@@ -163,12 +181,12 @@ export default function StudentSubjects() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="flex items-center space-x-2">
-                        <User className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">{subject.teacher}</span>
+                        <User className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground" />
+                        <span className="text-xs sm:text-sm md:text-base">{subject.teacher}</span>
                       </div>
                       
                       <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
+                        <div className="flex justify-between text-xs sm:text-sm md:text-base">
                           <span>Progress</span>
                           <span>{subject.progress}%</span>
                         </div>
@@ -178,7 +196,7 @@ export default function StudentSubjects() {
                         />
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div className="grid grid-cols-2 gap-3 md:gap-4 text-xs sm:text-sm md:text-base">
                         <div>
                           <p className="text-muted-foreground">Last Test</p>
                           <p className="font-medium">{subject.lastTest}</p>
@@ -189,117 +207,22 @@ export default function StudentSubjects() {
                         </div>
                       </div>
 
-                      <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                        <Calendar className="h-4 w-4" />
+                      <div className="flex items-center space-x-2 text-xs sm:text-sm md:text-base text-muted-foreground">
+                        <Calendar className="h-4 w-4 md:h-5 md:w-5" />
                         <span>Next: {subject.nextClass}</span>
                       </div>
 
-                      <Button className="w-full" size="sm">
-                        View Details
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="science" className="space-y-6">
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {subjects.filter(s => ['Mathematics', 'Physics', 'Chemistry', 'Biology'].includes(s.name)).map((subject) => (
-                  <Card key={subject.id} className="hover:shadow-lg transition-shadow">
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <CardTitle className="text-lg">{subject.name}</CardTitle>
-                          <CardDescription>{subject.code}</CardDescription>
-                        </div>
-                        <Badge className={getStatusColor(subject.status)}>
-                          {subject.grade}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="flex items-center space-x-2">
-                        <User className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">{subject.teacher}</span>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span>Progress</span>
-                          <span>{subject.progress}%</span>
-                        </div>
-                        <Progress 
-                          value={subject.progress} 
-                          className="h-2"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <p className="text-muted-foreground">Last Test</p>
-                          <p className="font-medium">{subject.lastTest}</p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">Assignments</p>
-                          <p className="font-medium">{subject.assignments} pending</p>
-                        </div>
-                      </div>
-
-                      <Button className="w-full" size="sm">
-                        View Details
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="others" className="space-y-6">
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {subjects.filter(s => !['Mathematics', 'Physics', 'Chemistry', 'Biology'].includes(s.name)).map((subject) => (
-                  <Card key={subject.id} className="hover:shadow-lg transition-shadow">
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <CardTitle className="text-lg">{subject.name}</CardTitle>
-                          <CardDescription>{subject.code}</CardDescription>
-                        </div>
-                        <Badge className={getStatusColor(subject.status)}>
-                          {subject.grade}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="flex items-center space-x-2">
-                        <User className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">{subject.teacher}</span>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span>Progress</span>
-                          <span>{subject.progress}%</span>
-                        </div>
-                        <Progress 
-                          value={subject.progress} 
-                          className="h-2"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <p className="text-muted-foreground">Last Test</p>
-                          <p className="font-medium">{subject.lastTest}</p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">Assignments</p>
-                          <p className="font-medium">{subject.assignments} pending</p>
-                        </div>
-                      </div>
-
-                      <Button className="w-full" size="sm">
-                        View Details
+                      <Button
+                        className="w-full"
+                        size="sm"
+                        type="button"
+                        aria-label={`View details for ${subject.name}`}
+                        aria-busy={detailLoading && detailSubject?.id === subject.id}
+                        aria-disabled={detailLoading}
+                        disabled={detailLoading}
+                        onClick={() => openSubjectDetail(subject)}
+                      >
+                        {detailLoading && detailSubject?.id === subject.id ? 'Loading…' : 'View Details'}
                       </Button>
                     </CardContent>
                   </Card>
@@ -307,6 +230,45 @@ export default function StudentSubjects() {
               </div>
             </TabsContent>
           </Tabs>
+          <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
+            <DialogContent aria-label="Subject details">
+              <DialogHeader>
+                <DialogTitle className="text-primary">{detailSubject?.name || 'Subject Details'}</DialogTitle>
+                <DialogDescription>{detailSubject?.code || ''}</DialogDescription>
+              </DialogHeader>
+              {detailError ? (
+                <div className="text-destructive text-sm md:text-base">{detailError}</div>
+              ) : (
+                <div className="space-y-3 text-sm md:text-base">
+                  <div className="flex items-center space-x-2">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <span>{detailSubject?.teacher}</span>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span>Progress</span>
+                      <span>{detailSubject?.progress ?? 0}%</span>
+                    </div>
+                    <Progress value={detailSubject?.progress ?? 0} className="h-2" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-muted-foreground">Last Test</p>
+                      <p className="font-medium">{detailSubject?.lastTest ?? 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Assignments</p>
+                      <p className="font-medium">{detailSubject?.assignments ?? 0} pending</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2 text-muted-foreground">
+                    <Calendar className="h-4 w-4" />
+                    <span>Next: {detailSubject?.nextClass}</span>
+                  </div>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
         </div>
       </main>
     </div>
