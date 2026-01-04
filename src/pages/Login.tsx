@@ -128,9 +128,9 @@ export default function Login() {
                   onChange={(e) => setIdentifier(e.target.value)}
                   required
                 />
-                <p className="text-xs text-muted-foreground">
+                {/* <p className="text-xs text-muted-foreground">
                   You can use your email, roll number (students), or ID number (teachers).
-                </p>
+                </p> */}
               </div>
 
               <div className="space-y-2">

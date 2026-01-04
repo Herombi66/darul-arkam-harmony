@@ -48,7 +48,6 @@ import {
   DollarSign,
   Edit
 } from 'lucide-react';
-import DashboardSidebar from '@/components/DashboardSidebar';
 
 interface SupportTicket {
   id: string;
@@ -103,113 +102,73 @@ export default function AdminSupport() {
   const [newResponse, setNewResponse] = useState('');
   const [isInternalResponse, setIsInternalResponse] = useState(false);
 
-  // Mock data
   useEffect(() => {
-    const mockTickets: SupportTicket[] = [
-      {
-        id: '1',
-        title: 'Cannot access student portal',
-        description: 'I am unable to log into the student portal. Getting error message "Invalid credentials" even though I\'m using the correct password.',
-        category: 'technical',
-        priority: 'high',
-        status: 'in_progress',
-        requester: {
-          name: 'Ahmad Muhammad',
-          email: 'student@darularqam.edu.ng',
-          role: 'student'
-        },
-        assignedTo: {
-          name: 'Dr. Muhammad Sani',
-          email: 'admin@darularqam.edu.ng'
-        },
-        createdAt: '2024-09-19T10:30:00Z',
-        updatedAt: '2024-09-20T09:15:00Z',
-        responses: [
-          {
-            id: '1',
-            content: 'Thank you for reporting this issue. I\'m investigating the login problem. Could you please confirm which browser you\'re using?',
-            author: {
-              name: 'Dr. Muhammad Sani',
-              email: 'admin@darularqam.edu.ng'
-            },
-            createdAt: '2024-09-19T11:00:00Z',
-            isInternal: false
-          }
-        ]
-      },
-      {
-        id: '2',
-        title: 'Request for grade correction',
-        description: 'I believe there\'s an error in my child\'s mathematics grade for the first term. The recorded score doesn\'t match the assignment grades.',
-        category: 'academic',
-        priority: 'medium',
-        status: 'open',
-        requester: {
-          name: 'Fatima Abubakar',
-          email: 'parent@example.com',
-          role: 'parent'
-        },
-        createdAt: '2024-09-18T14:20:00Z',
-        updatedAt: '2024-09-18T14:20:00Z',
-        responses: []
-      },
-      {
-        id: '3',
-        title: 'Payment confirmation not received',
-        description: 'I made a school fees payment yesterday but haven\'t received any confirmation email or receipt.',
-        category: 'financial',
-        priority: 'medium',
-        status: 'resolved',
-        requester: {
-          name: 'Ibrahim Musa',
-          email: 'parent2@example.com',
-          role: 'parent'
-        },
-        assignedTo: {
-          name: 'Finance Officer',
-          email: 'finance@darularqam.edu.ng'
-        },
-        createdAt: '2024-09-15T16:45:00Z',
-        updatedAt: '2024-09-16T10:30:00Z',
-        responses: [
-          {
-            id: '2',
-            content: 'Your payment has been confirmed and processed. The confirmation email should arrive shortly. Please check your spam folder if you don\'t see it.',
-            author: {
-              name: 'Finance Officer',
-              email: 'finance@darularqam.edu.ng'
-            },
-            createdAt: '2024-09-16T10:30:00Z',
-            isInternal: false
-          }
-        ]
-      }
-    ];
+    const fetchSupportData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const ticketsRes = await fetch('http://localhost:5000/api/support/tickets', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (ticketsRes.ok) {
+          const ticketsData = await ticketsRes.json();
+          setTickets(ticketsData);
+        }
 
-    const mockFaqs: FAQ[] = [
-      {
-        id: '1',
-        question: 'How do I reset my password?',
-        answer: 'To reset your password, click on "Forgot Password" on the login page and follow the instructions sent to your email.',
-        category: 'Technical',
-        views: 245,
-        helpful: 189
-      },
-      {
-        id: '2',
-        question: 'How to view my child\'s grades?',
-        answer: 'Parents can view their children\'s grades by logging into the parent portal and navigating to the "Academic Records" section.',
-        category: 'Academic',
-        views: 156,
-        helpful: 134
+        const faqsRes = await fetch('http://localhost:5000/api/support/faqs', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (faqsRes.ok) {
+          const faqsData = await faqsRes.json();
+          setFaqs(faqsData);
+        }
+      } catch (error) {
+        console.error('Failed to fetch support data:', error);
       }
-    ];
+    };
 
-    setTickets(mockTickets);
-    setFaqs(mockFaqs);
+    fetchSupportData();
   }, []);
 
+  const handleAddResponse = async () => {
+    if (!selectedTicket) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`http://localhost:5000/api/support/tickets/${selectedTicket.id}/responses`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ content: newResponse, isInternal: isInternalResponse }),
+      });
+
+      if (res.ok) {
+        // Refresh tickets
+        const ticketsRes = await fetch('http://localhost:5000/api/support/tickets', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (ticketsRes.ok) {
+          const ticketsData = await ticketsRes.json();
+          setTickets(ticketsData);
+        }
+        setIsResponseDialogOpen(false);
+        setNewResponse('');
+      }
+    } catch (error) {
+      console.error('Failed to add response:', error);
+    }
+  };
+
   const filteredTickets = tickets.filter(ticket => {
+    const searchMatch = ticket.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ticket.requester.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesSearch = ticket.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          ticket.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || ticket.status === statusFilter;
@@ -223,7 +182,7 @@ export default function AdminSupport() {
     ));
   };
 
-  const handleAddResponse = () => {
+  const handleUpdateResponse = () => {
     if (!selectedTicket || !newResponse.trim()) return;
 
     const response: TicketResponse = {
@@ -283,8 +242,6 @@ export default function AdminSupport() {
 
   return (
     <div className="flex min-h-screen bg-muted/30">
-      <DashboardSidebar userType="admin" />
-
       <main className="flex-1 overflow-auto">
         <div className="p-6 space-y-6">
           {/* Header */}

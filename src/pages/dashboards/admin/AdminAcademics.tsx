@@ -41,7 +41,6 @@ import {
   TrendingUp,
   Award
 } from 'lucide-react';
-import DashboardSidebar from '@/components/DashboardSidebar';
 
 interface Subject {
   id: string;
@@ -84,89 +83,31 @@ export default function AdminAcademics() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
-  // Mock data
   useEffect(() => {
-    const mockSubjects: Subject[] = [
-      {
-        id: '1',
-        name: 'Mathematics',
-        code: 'MATH101',
-        teacher: 'Mrs. Fatima Ibrahim',
-        class: 'JSS1',
-        students: 45,
-        status: 'active'
-      },
-      {
-        id: '2',
-        name: 'English Language',
-        code: 'ENG101',
-        teacher: 'Mr. Ahmed Musa',
-        class: 'JSS1',
-        students: 42,
-        status: 'active'
-      },
-      {
-        id: '3',
-        name: 'Islamic Studies',
-        code: 'ISL101',
-        teacher: 'Dr. Muhammad Sani',
-        class: 'JSS1',
-        students: 48,
-        status: 'active'
-      }
-    ];
+    const fetchData = async () => {
+      const token = localStorage.getItem('token');
+      const headers = { 'Authorization': `Bearer ${token}` };
 
-    const mockEnrollments: Enrollment[] = [
-      {
-        id: '1',
-        studentName: 'Ahmad Muhammad',
-        studentId: 'STD001',
-        subject: 'Mathematics',
-        class: 'JSS1',
-        enrollmentDate: '2024-09-01',
-        status: 'enrolled'
-      },
-      {
-        id: '2',
-        studentName: 'Fatima Abubakar',
-        studentId: 'STD002',
-        subject: 'English Language',
-        class: 'JSS1',
-        enrollmentDate: '2024-09-01',
-        status: 'enrolled'
-      }
-    ];
+      try {
+        const [subjectsRes, enrollmentsRes, gradesRes] = await Promise.all([
+          fetch(`${process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001'}/api/academics/subjects`, { headers }),
+          fetch(`${process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001'}/api/academics/enrollments`, { headers }),
+          fetch(`${process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001'}/api/academics/grades`, { headers }),
+        ]);
 
-    const mockGrades: Grade[] = [
-      {
-        id: '1',
-        studentName: 'Ahmad Muhammad',
-        studentId: 'STD001',
-        subject: 'Mathematics',
-        class: 'JSS1',
-        term: 'First Term',
-        academicYear: '2024/2025',
-        score: 85,
-        grade: 'A',
-        remarks: 'Excellent performance'
-      },
-      {
-        id: '2',
-        studentName: 'Fatima Abubakar',
-        studentId: 'STD002',
-        subject: 'English Language',
-        class: 'JSS1',
-        term: 'First Term',
-        academicYear: '2024/2025',
-        score: 78,
-        grade: 'B+',
-        remarks: 'Good understanding'
-      }
-    ];
+        const subjectsData = await subjectsRes.json();
+        const enrollmentsData = await enrollmentsRes.json();
+        const gradesData = await gradesRes.json();
 
-    setSubjects(mockSubjects);
-    setEnrollments(mockEnrollments);
-    setGrades(mockGrades);
+        setSubjects(subjectsData);
+        setEnrollments(enrollmentsData);
+        setGrades(gradesData);
+      } catch (error) {
+        console.error("Failed to fetch academic data:", error);
+      }
+    };
+
+    fetchData();
   }, []);
 
   const getGradeColor = (grade: string) => {
@@ -193,8 +134,6 @@ export default function AdminAcademics() {
 
   return (
     <div className="flex min-h-screen bg-muted/30">
-      <DashboardSidebar userType="admin" />
-
       <main className="flex-1 overflow-auto">
         <div className="p-6 space-y-6">
           {/* Header */}

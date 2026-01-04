@@ -10,8 +10,8 @@ import Login from "./pages/Login";
 import About from "./pages/About";
 import Gallery from "./pages/Gallery";
 import Contact from "./pages/Contact";
-import Admission from "./pages/Admission";
-import StudentDashboard from "./pages/dashboards/StudentDashboard";
+import Admission from "./pages/dashboards/admin/Admission";
+import StudentDashboard from "./pages/dashboards/student/StudentDashboard";
 import StudentProfile from "./pages/dashboards/student/StudentProfile";
 import StudentAcademics from "./pages/dashboards/student/StudentAcademics";
 import StudentSubjects from "./pages/dashboards/student/StudentSubjects";
@@ -22,38 +22,45 @@ import PaymentHistory from "./pages/dashboards/student/PaymentHistory";
 import AttendanceRecords from "./pages/dashboards/student/AttendanceRecords";
 import RequestLeave from "./pages/dashboards/student/RequestLeave";
 import StudentEvents from "./pages/dashboards/student/Events";
-import StudentMessages from "./pages/dashboards/student/Messages";
+import StudentMessages from "./pages/dashboards/student/StudentMessages";
 import StudentSupport from "./pages/dashboards/student/Support";
-import TeacherDashboard from "./pages/dashboards/TeacherDashboard";
-import TeacherProfile from "./pages/dashboards/TeacherProfile";
-import TeacherSubjects from "./pages/dashboards/TeacherSubjects";
-import TeacherSubjectDetails from "./pages/dashboards/TeacherSubjectDetails";
-import TeacherRecordSheet from "./pages/dashboards/TeacherRecordSheet";
-import TeacherClasses from "./pages/dashboards/TeacherClasses";
-import TeacherAssignments from "./pages/dashboards/TeacherAssignments";
-import TeacherAttendance from "./pages/dashboards/TeacherAttendance";
-import TeacherEvents from "./pages/dashboards/TeacherEvents";
-import TeacherMessages from "./pages/dashboards/TeacherMessages";
-import TeacherSupport from "./pages/dashboards/TeacherSupport";
-import ParentDashboard from "./pages/dashboards/ParentDashboard";
+import TeacherDashboard from "./pages/dashboards/teacher/TeacherDashboard";
+import TeacherProfile from "./pages/dashboards/teacher/TeacherProfile";
+import TeacherSubjects from "./pages/dashboards/teacher/TeacherSubjects";
+import TeacherSubjectDetails from "./pages/dashboards/teacher/TeacherSubjectDetails";
+import TeacherRecordSheet from "./pages/dashboards/teacher/TeacherRecordSheet";
+import TeacherClasses from "./pages/dashboards/teacher/TeacherClasses";
+import TeacherAssignments from "./pages/dashboards/teacher/TeacherAssignments";
+import TeacherAttendance from "./pages/dashboards/teacher/TeacherAttendance";
+import TeacherEvents from "./pages/dashboards/teacher/TeacherEvents";
+import TeacherMessages from "./pages/dashboards/teacher/TeacherMessages";
+import TeacherSupport from "./pages/dashboards/teacher/TeacherSupport";
+import ParentDashboard from "./pages/dashboards/parent/ParentDashboard";
 import Profile from "./pages/dashboards/parent/Profile";
 import Children from "./pages/dashboards/parent/Children";
 import Payments from "./pages/dashboards/parent/Payments";
 import Events from "./pages/dashboards/parent/Events";
 import Messages from "./pages/dashboards/parent/Messages";
 import Support from "./pages/dashboards/parent/Support";
-import ExamsOfficerDashboard from "./pages/dashboards/ExamsOfficerDashboard";
-import AdmissionOfficerDashboard from "./pages/dashboards/AdmissionOfficerDashboard";
-import FinanceOfficerDashboard from "./pages/dashboards/FinanceOfficerDashboard";
+import ExamsOfficerDashboard from "./pages/dashboards/examOffice/ExamsOfficerDashboard";
+import AdmissionOfficerDashboard from "./pages/dashboards/admission/AdmissionOfficerDashboard";
+import AdmissionDashboard from "./pages/dashboards/admission/AdmissionDashboard";
+import AdmissionApplications from "./pages/dashboards/admission/Applications";
+import AdmissionEnrollment from "./pages/dashboards/admission/Enrollment";
+import AdmissionEvents from "./pages/dashboards/admission/Events";
+import AdmissionMessages from "./pages/dashboards/admission/Messages";
+import AdmissionProfile from "./pages/dashboards/admission/Profile";
+import AdmissionSupport from "./pages/dashboards/admission/Support";
+import FinanceOfficerDashboard from "./pages/dashboards/finance/FinanceOfficerDashboard";
 import MediaOfficerDashboard from "./pages/dashboards/MediaOfficerDashboard";
-import AdminDashboard from "./pages/dashboards/AdminDashboard";
-import AdminProfile from "./pages/dashboards/AdminProfile";
-import AdminUsers from "./pages/dashboards/AdminUsers";
-import AdminAcademics from "./pages/dashboards/AdminAcademics";
-import AdminFinance from "./pages/dashboards/AdminFinance";
-import AdminEvents from "./pages/dashboards/AdminEvents";
-import AdminMessages from "./pages/dashboards/AdminMessages";
-import AdminSupport from "./pages/dashboards/AdminSupport";
+import AdminDashboard from "./pages/dashboards/admin/AdminDashboard";
+import AdminProfile from "./pages/dashboards/admin/AdminProfile";
+import AdminUsers from "./pages/dashboards/admin/AdminUsers";
+import AdminAcademics from "./pages/dashboards/admin/AdminAcademics";
+import AdminFinance from "./pages/dashboards/admin/AdminFinance";
+import AdminEvents from "./pages/dashboards/admin/AdminEvents";
+import AdminMessages from "./pages/dashboards/admin/AdminMessages";
+import AdminSupport from "./pages/dashboards/admin/AdminSupport";
 import NotFound from "./pages/NotFound";
 import { useEffect } from "react";
 import { io } from "socket.io-client";
@@ -61,6 +68,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ThemeProvider } from "next-themes";
 import NetworkGate from "@/components/NetworkGate";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import AdminLayout from "./layouts/AdminLayout";
 
 const queryClient = new QueryClient();
 
@@ -160,16 +168,25 @@ const App = () => {
                 <Route path="/dashboard/parent/support" element={<Support />} />
                 <Route path="/dashboard/exams-officer" element={<ExamsOfficerDashboard />} />
                 <Route path="/dashboard/admission-officer" element={<AdmissionOfficerDashboard />} />
+                <Route path="/dashboard/admission" element={<AdmissionDashboard />} />
+                <Route path="/dashboard/admission/profile" element={<AdmissionProfile />} />
+                <Route path="/dashboard/admission/applications" element={<AdmissionApplications />} />
+                <Route path="/dashboard/admission/enrollment" element={<AdmissionEnrollment />} />
+                <Route path="/dashboard/admission/events" element={<AdmissionEvents />} />
+                <Route path="/dashboard/admission/messages" element={<AdmissionMessages />} />
+                <Route path="/dashboard/admission/support" element={<AdmissionSupport />} />
                 <Route path="/dashboard/finance-officer" element={<FinanceOfficerDashboard />} />
                 <Route path="/dashboard/media-officer" element={<MediaOfficerDashboard />} />
-                <Route path="/dashboard/admin" element={<AdminDashboard />} />
-                <Route path="/dashboard/admin/profile" element={<AdminProfile />} />
-                <Route path="/dashboard/admin/users" element={<AdminUsers />} />
-                <Route path="/dashboard/admin/academics" element={<AdminAcademics />} />
-                <Route path="/dashboard/admin/finance" element={<AdminFinance />} />
-                <Route path="/dashboard/admin/events" element={<AdminEvents />} />
-                <Route path="/dashboard/admin/messages" element={<AdminMessages />} />
-                <Route path="/dashboard/admin/support" element={<AdminSupport />} />
+                <Route path="/dashboard/admin" element={<AdminLayout />}>
+                  <Route index element={<AdminDashboard />} />
+                  <Route path="profile" element={<AdminProfile />} />
+                  <Route path="users" element={<AdminUsers />} />
+                  <Route path="academics" element={<AdminAcademics />} />
+                  <Route path="finance" element={<AdminFinance />} />
+                  <Route path="events" element={<AdminEvents />} />
+                  <Route path="messages" element={<AdminMessages />} />
+                  <Route path="support" element={<AdminSupport />} />
+                </Route>
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
                   </Routes>

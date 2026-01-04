@@ -10,6 +10,7 @@ const path = require('path');
 const { errorHandler } = require('./middleware/error.middleware');
 const security = require('./middleware/security.middleware');
 const { setIo } = require('./utils/socket');
+const messagesController = require('./controllers/messages.controller');
 
 // Load environment variables early and from backend/.env
 dotenv.config({ path: path.join(__dirname, '../.env') });
@@ -46,6 +47,9 @@ app.use(security.xssClean);
 app.use(security.mongoSanitize);
 app.use(morgan('dev'));
 
+// Serve uploads folder
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 // Define routes
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/students', require('./routes/student.routes'));
@@ -56,6 +60,14 @@ app.use('/api/messages', require('./routes/message.routes'));
 app.use('/api/events', require('./routes/event.routes'));
 app.use('/api/presence', require('./routes/presence.routes'));
 app.use('/api/teacher', require('./routes/teacher.routes'));
+app.use('/api/admin', require('./routes/admin.routes'));
+app.use('/api/academics', require('./routes/academics.routes'));
+app.use('/api/users', require('./routes/users.routes'));
+app.use('/api/finance', require('./routes/finance.routes'));
+app.use('/api/messages', require('./routes/messages.routes'));
+app.use('/api/profile', require('./routes/profile.routes'));
+app.use('/api/support', require('./routes/support.routes'));
+app.use('/api/admissions', require('./routes/admission.routes'));
 
 // API health check route
 app.get('/api/health', (req, res) => {
@@ -78,6 +90,9 @@ app.get('/api/db/health', async (req, res) => {
 io.on('connection', (socket) => {
   console.log('New client connected:', socket.id);
 
+  // Pass the socket to the messages controller
+  messagesController.handleConnection(socket);
+  
   // Send a welcome notification to verify real-time connection
   socket.emit('notification', {
     type: 'system',

@@ -26,7 +26,7 @@ export default function Admission() {
   });
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.agreeTerms) {
       toast({
@@ -36,11 +36,32 @@ export default function Admission() {
       });
       return;
     }
-    
-    toast({
-      title: "Application Submitted!",
-      description: "We'll review your application and contact you soon.",
-    });
+
+    try {
+      const response = await fetch('/api/admissions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(formData)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit application');
+      }
+
+      toast({
+        title: "Application Submitted!",
+        description: "We'll review your application and contact you soon.",
+      });
+    } catch (error) {
+      toast({
+        title: "Submission Failed",
+        description: "There was an error submitting your application. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const admissionSteps = [
