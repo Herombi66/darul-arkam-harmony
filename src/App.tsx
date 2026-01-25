@@ -69,6 +69,7 @@ import { ThemeProvider } from "next-themes";
 import NetworkGate from "@/components/NetworkGate";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import AdminLayout from "./layouts/AdminLayout";
+import DashboardLayout from "./layouts/DashboardLayout";
 
 const queryClient = new QueryClient();
 
@@ -135,49 +136,65 @@ const App = () => {
                 <Route path="/gallery" element={<Gallery />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/admission" element={<Admission />} />
-                <Route path="/dashboard/student" element={<StudentDashboard />} />
-                <Route path="/dashboard/student/profile" element={<StudentProfile />} />
-                <Route path="/dashboard/student/academics" element={<StudentAcademics />} />
-                <Route path="/dashboard/student/academics/subjects" element={<StudentSubjects />} />
-                <Route path="/dashboard/student/academics/assignments" element={<StudentAssignments />} />
-                <Route path="/dashboard/student/academics/results" element={<StudentResults />} />
-                <Route path="/dashboard/student/payments/pay" element={<PaySchoolFees />} />
-                <Route path="/dashboard/student/payments/history" element={<PaymentHistory />} />
-                <Route path="/dashboard/student/attendance/records" element={<AttendanceRecords />} />
-                <Route path="/dashboard/student/attendance/request-leave" element={<RequestLeave />} />
-                <Route path="/dashboard/student/events" element={<StudentEvents />} />
-                <Route path="/dashboard/student/messages" element={<StudentMessages />} />
-                <Route path="/dashboard/student/support" element={<StudentSupport />} />
-                <Route path="/dashboard/teacher" element={<ProtectedRoute allowedRoles={["teacher"]}><TeacherDashboard /></ProtectedRoute>} />
-                <Route path="/dashboard/teacher/profile" element={<ProtectedRoute allowedRoles={["teacher"]}><TeacherProfile /></ProtectedRoute>} />
-                <Route path="/dashboard/teacher/subjects" element={<ProtectedRoute allowedRoles={["teacher"]}><TeacherSubjects /></ProtectedRoute>} />
-                <Route path="/dashboard/teacher/subjects/:subject" element={<ProtectedRoute allowedRoles={["teacher"]}><TeacherSubjectDetails /></ProtectedRoute>} />
-                <Route path="/dashboard/teacher/classes" element={<ProtectedRoute allowedRoles={["teacher"]}><TeacherClasses /></ProtectedRoute>} />
-                <Route path="/dashboard/teacher/assignments" element={<ProtectedRoute allowedRoles={["teacher"]}><TeacherAssignments /></ProtectedRoute>} />
-                <Route path="/dashboard/teacher/attendance" element={<ProtectedRoute allowedRoles={["teacher"]}><TeacherAttendance /></ProtectedRoute>} />
-                <Route path="/dashboard/teacher/record-sheet" element={<ProtectedRoute allowedRoles={["teacher"]}><TeacherRecordSheet /></ProtectedRoute>} />
-                <Route path="/dashboard/teacher/events" element={<ProtectedRoute allowedRoles={["teacher"]}><TeacherEvents /></ProtectedRoute>} />
-                <Route path="/dashboard/teacher/messages" element={<ProtectedRoute allowedRoles={["teacher"]}><TeacherMessages /></ProtectedRoute>} />
-                <Route path="/dashboard/teacher/support" element={<ProtectedRoute allowedRoles={["teacher"]}><TeacherSupport /></ProtectedRoute>} />
-                <Route path="/dashboard/parent" element={<ParentDashboard />} />
-                <Route path="/dashboard/parent/profile" element={<Profile />} />
-                <Route path="/dashboard/parent/children" element={<Children />} />
-                <Route path="/dashboard/parent/payments" element={<Payments />} />
-                <Route path="/dashboard/parent/events" element={<Events />} />
-                <Route path="/dashboard/parent/messages" element={<Messages />} />
-                <Route path="/dashboard/parent/support" element={<Support />} />
-                <Route path="/dashboard/exams-officer" element={<ExamsOfficerDashboard />} />
-                <Route path="/dashboard/admission-officer" element={<AdmissionOfficerDashboard />} />
-                <Route path="/dashboard/admission" element={<AdmissionDashboard />} />
-                <Route path="/dashboard/admission/profile" element={<AdmissionProfile />} />
-                <Route path="/dashboard/admission/applications" element={<AdmissionApplications />} />
-                <Route path="/dashboard/admission/enrollment" element={<AdmissionEnrollment />} />
-                <Route path="/dashboard/admission/events" element={<AdmissionEvents />} />
-                <Route path="/dashboard/admission/messages" element={<AdmissionMessages />} />
-                <Route path="/dashboard/admission/support" element={<AdmissionSupport />} />
-                <Route path="/dashboard/finance-officer" element={<FinanceOfficerDashboard />} />
-                <Route path="/dashboard/media-officer" element={<MediaOfficerDashboard />} />
-                <Route path="/dashboard/admin" element={<AdminLayout />}>
+                <Route path="/dashboard/student" element={<DashboardLayout userType="student" />}>
+                  <Route index element={<StudentDashboard />} />
+                  <Route path="profile" element={<StudentProfile />} />
+                  <Route path="academics" element={<StudentAcademics />} />
+                  <Route path="academics/subjects" element={<StudentSubjects />} />
+                  <Route path="academics/assignments" element={<StudentAssignments />} />
+                  <Route path="academics/results" element={<StudentResults />} />
+                  <Route path="payments/pay" element={<PaySchoolFees />} />
+                  <Route path="payments/history" element={<PaymentHistory />} />
+                  <Route path="attendance/records" element={<AttendanceRecords />} />
+                  <Route path="attendance/request-leave" element={<RequestLeave />} />
+                  <Route path="events" element={<StudentEvents />} />
+                  <Route path="messages" element={<StudentMessages />} />
+                  <Route path="support" element={<StudentSupport />} />
+                </Route>
+                <Route path="/dashboard/teacher" element={<ProtectedRoute allowedRoles={["teacher"]}><DashboardLayout userType="teacher" /></ProtectedRoute>}>
+                  <Route index element={<TeacherDashboard />} />
+                  <Route path="profile" element={<TeacherProfile />} />
+                  <Route path="subjects" element={<TeacherSubjects />} />
+                  <Route path="subjects/:subject" element={<TeacherSubjectDetails />} />
+                  <Route path="classes" element={<TeacherClasses />} />
+                  <Route path="assignments" element={<TeacherAssignments />} />
+                  <Route path="attendance" element={<TeacherAttendance />} />
+                  <Route path="record-sheet" element={<TeacherRecordSheet />} />
+                  <Route path="events" element={<TeacherEvents />} />
+                  <Route path="messages" element={<TeacherMessages />} />
+                  <Route path="support" element={<TeacherSupport />} />
+                </Route>
+                <Route path="/dashboard/parent" element={<DashboardLayout userType="parent" />}>
+                  <Route index element={<ParentDashboard />} />
+                  <Route path="profile" element={<Profile />} />
+                  <Route path="children" element={<Children />} />
+                  <Route path="payments" element={<Payments />} />
+                  <Route path="events" element={<Events />} />
+                  <Route path="messages" element={<Messages />} />
+                  <Route path="support" element={<Support />} />
+                </Route>
+                <Route path="/dashboard/exams-officer" element={<DashboardLayout userType="exams-officer" />}>
+                  <Route index element={<ExamsOfficerDashboard />} />
+                </Route>
+                <Route path="/dashboard/admission-officer" element={<DashboardLayout userType="admission-officer" />}>
+                  <Route index element={<AdmissionOfficerDashboard />} />
+                </Route>
+                <Route path="/dashboard/admission" element={<DashboardLayout userType="admission" />}>
+                  <Route index element={<AdmissionDashboard />} />
+                  <Route path="profile" element={<AdmissionProfile />} />
+                  <Route path="applications" element={<AdmissionApplications />} />
+                  <Route path="enrollment" element={<AdmissionEnrollment />} />
+                  <Route path="events" element={<AdmissionEvents />} />
+                  <Route path="messages" element={<AdmissionMessages />} />
+                  <Route path="support" element={<AdmissionSupport />} />
+                </Route>
+                <Route path="/dashboard/finance-officer" element={<DashboardLayout userType="finance-officer" />}>
+                  <Route index element={<FinanceOfficerDashboard />} />
+                </Route>
+                <Route path="/dashboard/media-officer" element={<DashboardLayout userType="media-officer" />}>
+                  <Route index element={<MediaOfficerDashboard />} />
+                </Route>
+                <Route path="/dashboard/admin" element={<DashboardLayout userType="admin" />}>
                   <Route index element={<AdminDashboard />} />
                   <Route path="profile" element={<AdminProfile />} />
                   <Route path="users" element={<AdminUsers />} />

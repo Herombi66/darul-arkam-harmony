@@ -1,11 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { 
-  Users, 
-  CreditCard, 
-  Calendar, 
-  MessageSquare, 
+import {
+  Users,
+  CreditCard,
+  Calendar,
+  MessageSquare,
   TrendingUp,
   AlertCircle,
   CheckCircle
@@ -57,7 +58,7 @@ export default function ParentDashboard() {
   return (
     <div className="flex min-h-screen bg-muted/30">
       <DashboardSidebar userType="parent" />
-      
+
       <main className="flex-1 overflow-auto">
         <div className="p-6 space-y-6">
           {/* Welcome Header */}
@@ -210,3 +211,51 @@ export default function ParentDashboard() {
     </div>
   );
 }
+
+const ParentDashboard = () => {
+  return (
+    <div className="grid gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+      <h1 className="text-2xl font-bold">Parent Dashboard</h1>
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>My Children's Grades</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Child</TableHead>
+                  <TableHead>Course</TableHead>
+                  <TableHead>Grade</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow>
+                  <TableCell>Jane Doe</TableCell>
+                  <TableCell>Mathematics</TableCell>
+                  <TableCell>A</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>Jane Doe</TableCell>
+                  <TableCell>Science</TableCell>
+                  <TableCell>B</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Upcoming School Events</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>No upcoming events.</p>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default ParentDashboard;

@@ -60,7 +60,7 @@ export default function AdmissionDashboard() {
   return (
     <div className="flex min-h-screen bg-muted/30">
       <DashboardSidebar userType="admission" />
-      <main className="flex-1 p-6">
+      <main className="flex-1 overflow-auto p-6">
         <h1 className="text-3xl font-bold text-primary mb-6">Admission Dashboard</h1>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {loading ? (

@@ -187,7 +187,7 @@ export default function DashboardSidebar({ userType }: DashboardSidebarProps) {
             <div className="flex items-center space-x-3">
               <img src={schoolLogo} alt="School Logo" className="h-8 w-8" />
               <div>
-                <h2 className="font-bold text-sm">Darul Arqam Academy</h2>
+                <h2 className="font-bold text-sm">Care and Support Academy</h2>
                 <p className="text-xs text-primary-foreground/70">Gombe State</p>
               </div>
             </div>

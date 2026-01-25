@@ -1,7 +1,7 @@
 const { pool } = require('../config/db');
 const bcrypt = require('bcryptjs');
 
-const getUsers = async (req, res) => {
+const getAllUsers = async (req, res) => {
   try {
     const users = await pool.query('SELECT id, first_name, last_name, email, role, status, last_login, created_at FROM users');
     res.json(users.rows);
@@ -54,7 +54,7 @@ const deleteUser = async (req, res) => {
 };
 
 module.exports = {
-  getUsers,
+  getAllUsers,
   createUser,
   updateUser,
   deleteUser,

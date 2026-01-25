@@ -1,8 +1,17 @@
 import { useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Bell, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import schoolLogo from '@/assets/school-logo.png';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -19,7 +28,7 @@ export default function Header() {
           <Link to="/" className="flex items-center space-x-3 hover-lift">
             <img src={schoolLogo} alt="Darul Arqam Academy" className="h-12 w-12" />
             <div className="hidden md:block">
-              <h1 className="text-xl font-bold text-primary">Darul Arqam Academy</h1>
+              <h1 className="text-xl font-bold text-primary">Care and Support Academy</h1>
               <p className="text-sm text-muted-foreground">Gombe State</p>
             </div>
           </Link>
@@ -53,17 +62,21 @@ export default function Header() {
             <Button asChild variant="hero" size="lg">
               <Link to="/login">Login</Link>
             </Button>
+            <ThemeToggle />
           </nav>
 
           {/* Mobile menu button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleMenu}
-            className="md:hidden"
-          >
-            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </Button>
+          <div className="flex items-center space-x-2">
+            <ThemeToggle />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleMenu}
+              className="md:hidden"
+            >
+              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </Button>
+          </div>
         </div>
 
         {/* Mobile Navigation */}

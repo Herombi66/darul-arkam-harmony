@@ -84,7 +84,7 @@ export default function Gallery() {
             School Gallery
           </h1>
           <p className="text-xl text-white/90 max-w-3xl mx-auto animate-slide-up">
-            Explore life at Darul Arqam Academy through our photo gallery
+            Explore life at Care and Support Academy through our photo gallery
           </p>
         </div>
       </section>

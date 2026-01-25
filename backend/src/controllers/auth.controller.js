@@ -17,9 +17,9 @@ function detectIdentifier(role, identifier) {
 
 // DEV fallback users (enabled when AUTH_DEV_MODE === 'true')
 const devUsers = [
-  { id: 'stu-1', role: 'student', name: 'Test Student', email: 'student@example.com', roll_number: 'STU123', password: 'password123', is_active: true },
-  { id: 'tch-1', role: 'teacher', name: 'Test Teacher', email: 'teacher@example.com', id_number: 'TCH123', password: 'password123', is_active: true },
-  { id: 'adm-1', role: 'admin', name: 'Admin User', email: 'admin@example.com', password: 'password123', is_active: true },
+  { id: 'stu-1', role: 'student', name: 'Test Student', email: 'student@example.com', roll_number: 'STU123', password: 'cands123', is_active: true },
+  { id: 'tch-1', role: 'teacher', name: 'Test Teacher', email: 'teacher@example.com', id_number: 'TCH123', password: 'cands123', is_active: true },
+  { id: 'adm-1', role: 'admin', name: 'Admin User', email: 'admin@example.com', password: 'cands123', is_active: true },
 ];
 
 // Add: auto-detect user and role when role is not provided

@@ -89,7 +89,7 @@ export default function Login() {
               <img src={schoolLogo} alt="Darul Arqam Academy" className="h-16 w-16" />
             </div>
             <CardTitle className="text-2xl font-bold text-primary">
-              Darul Arqam Academy
+              Care and Support Academy
             </CardTitle>
             <p className="text-muted-foreground">School Management System</p>
           </CardHeader>

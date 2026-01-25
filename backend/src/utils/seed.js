@@ -17,7 +17,7 @@ const Course = require('../models/course.model');
         studentId: 'STU001',
         name: 'John Doe',
         email,
-        password: 'password123',
+        password: 'cands123',
         grade: '10',
         section: 'A',
         dateOfBirth: new Date('2008-05-15'),

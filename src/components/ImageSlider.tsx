@@ -8,7 +8,7 @@ import teachersClassroom from '@/assets/teachers-classroom.jpg';
 const slides = [
   {
     image: schoolBuilding,
-    title: "Welcome to Darul Arqam Academy Gombe",
+    title: "Welcome to Care and Support Academy Gombe",
     description: "A premier Islamic educational institution committed to excellence in academic and moral development."
   },
   {

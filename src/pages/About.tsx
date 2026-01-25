@@ -46,7 +46,7 @@ export default function About() {
       <section className="py-16 bg-gradient-hero">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 animate-fade-in">
-            About Darul Arqam Academy
+            About Care and Support Academy
           </h1>
           <p className="text-xl text-white/90 max-w-3xl mx-auto animate-slide-up">
             Excellence in Islamic Education Since Our Foundation
@@ -128,7 +128,7 @@ export default function About() {
             </h2>
             <div className="prose prose-lg max-w-none text-muted-foreground">
               <p className="text-center mb-8">
-                Darul Arqam Academy Gombe was established with the vision of providing quality Islamic 
+                Care and Support Academy Gombe was established with the vision of providing quality Islamic 
                 education that prepares students for both this world and the hereafter. Our institution 
                 has grown from humble beginnings to become one of the most respected Islamic schools in Gombe State.
               </p>

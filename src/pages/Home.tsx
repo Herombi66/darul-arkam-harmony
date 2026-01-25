@@ -47,7 +47,7 @@ export default function Home() {
             Welcome to Our Academic Community
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto mb-8 animate-slide-up">
-            At Darul Arqam Academy Gombe, we are committed to providing exceptional Islamic education 
+            At Care and support Academy Gombe, we are committed to providing exceptional Islamic education 
             that nurtures both academic excellence and moral character development in our students.
           </p>
           <Button asChild variant="hero" size="xl" className="animate-bounce-in">
@@ -60,7 +60,7 @@ export default function Home() {
       <section className="py-16">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold text-center text-primary mb-12 animate-fade-in">
-            Why Choose Darul Arqam Academy?
+            Why Choose Care and Support Academy?
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
@@ -95,7 +95,7 @@ export default function Home() {
             Join Our Academic Excellence
           </h2>
           <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto animate-slide-up">
-            Experience world-class Islamic education with modern facilities and dedicated faculty.
+            Experience world-class educational system with modern facilities and dedicated faculty.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-bounce-in">
             <Button asChild variant="secondary" size="xl">
@@ -114,9 +114,9 @@ export default function Home() {
       {/* Footer */}
       <footer className="bg-primary text-primary-foreground py-8">
         <div className="responsive-div container mx-auto px-4 text-center">
-          <p className="text-lg font-medium mb-2">Darul Arqam Academy Gombe</p>
+          <p className="text-lg font-medium mb-2">Care and Support Academy Gombe</p>
           <p className="text-primary-foreground/80">
-            Building Excellence in Islamic Education Since Our Foundation
+            Building Excellence in Education Since Our Foundation
           </p>
         </div>
       </footer>

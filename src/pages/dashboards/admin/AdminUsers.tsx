@@ -1,3 +1,4 @@
+import { useToast } from '@/components/ui/use-toast';
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,6 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import {
   Select,
@@ -49,6 +51,7 @@ import {
   Filter,
   Download
 } from 'lucide-react';
+import api from '@/lib/api';
 
 interface User {
   id: string;
@@ -62,6 +65,7 @@ interface User {
 }
 
 export default function AdminUsers() {
+  const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
@@ -82,16 +86,17 @@ export default function AdminUsers() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001'}/api/users`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        const data = await response.json();
-        setUsers(data);
+        const response = await api.get('/api/users');
+        const data = response.data;
+        if (Array.isArray(data)) {
+          setUsers(data);
+        } else {
+          console.error("API did not return an array for users");
+          setUsers([]);
+        }
       } catch (error) {
         console.error("Failed to fetch users:", error);
+        setUsers([]);
       }
     };
 
@@ -109,16 +114,8 @@ export default function AdminUsers() {
 
   const handleCreateUser = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001'}/api/users`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(newUser)
-      });
-      const createdUser = await response.json();
+      const response = await api.post('/api/users', newUser);
+      const createdUser = response.data;
       setUsers([...users, createdUser]);
       setIsCreateDialogOpen(false);
       setNewUser({
@@ -128,26 +125,27 @@ export default function AdminUsers() {
         password: '',
         role: 'student',
         phoneNumber: '',
-        address: ''
+        address: '',
       });
-    } catch (error) {
-      console.error("Failed to create user:", error);
+      toast({
+        title: "User Created",
+        description: `User ${createdUser.firstName} ${createdUser.lastName} has been successfully created.`,
+      });
+    } catch (error: any) {
+      console.error('Error creating user:', error.response?.data || error.message);
+      toast({
+        title: "Error",
+        description: "Failed to create user. Please check the console for details.",
+        variant: "destructive",
+      });
     }
   };
 
   const handleEditUser = async () => {
     if (!selectedUser) return;
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001'}/api/users/${selectedUser.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(selectedUser)
-      });
-      const updatedUser = await response.json();
+      const response = await api.put(`/api/users/${selectedUser.id}`, selectedUser);
+      const updatedUser = response.data;
       setUsers(users.map(user => user.id === updatedUser.id ? updatedUser : user));
       setIsEditDialogOpen(false);
       setSelectedUser(null);
@@ -158,13 +156,7 @@ export default function AdminUsers() {
 
   const handleDeleteUser = async (userId: string) => {
     try {
-      const token = localStorage.getItem('token');
-      await fetch(`${process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001'}/api/users/${userId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      await api.delete(`/api/users/${userId}`);
       setUsers(users.filter(user => user.id !== userId));
     } catch (error) {
       console.error("Failed to delete user:", error);
@@ -213,9 +205,12 @@ export default function AdminUsers() {
                   Add User
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[600px]">
+              <DialogContent className="sm:max-w-[600px]" aria-describedby={undefined}>
                 <DialogHeader>
                   <DialogTitle>Add New User</DialogTitle>
+                  <DialogDescription>
+                    Fill in the details below to create a new user.
+                  </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid grid-cols-2 gap-4">
@@ -268,6 +263,8 @@ export default function AdminUsers() {
                           <SelectItem value="student">Student</SelectItem>
                           <SelectItem value="teacher">Teacher</SelectItem>
                           <SelectItem value="admin">Admin</SelectItem>
+                          <SelectItem value="parent">Parent</SelectItem>
+                          <SelectItem value="staff">Staff</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -319,6 +316,8 @@ export default function AdminUsers() {
                   <SelectItem value="admin">Admin</SelectItem>
                   <SelectItem value="teacher">Teacher</SelectItem>
                   <SelectItem value="student">Student</SelectItem>
+                  <SelectItem value="parent">Parent</SelectItem>
+                  <SelectItem value="staff">Staff</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -339,11 +338,10 @@ export default function AdminUsers() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>User</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Last Login</TableHead>
-                <TableHead>Date Added</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -358,18 +356,16 @@ export default function AdminUsers() {
                       </Avatar>
                       <div>
                         <p className="font-medium">{user.firstName} {user.lastName}</p>
-                        <p className="text-sm text-muted-foreground">{user.email}</p>
                       </div>
                     </div>
                   </TableCell>
+                  <TableCell>{user.email}</TableCell>
                   <TableCell>
                     <Badge variant={getRoleBadgeVariant(user.role)}>{user.role}</Badge>
                   </TableCell>
                   <TableCell>
                     <Badge variant={getStatusBadgeVariant(user.status)}>{user.status}</Badge>
                   </TableCell>
-                  <TableCell>{user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'N/A'}</TableCell>
-                  <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
                   <TableCell>
                     <div className="flex items-center space-x-2">
                       <Button
@@ -395,7 +391,7 @@ export default function AdminUsers() {
                             <Edit className="h-4 w-4" />
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[600px]">
+                        <DialogContent className="sm:max-w-[600px]" aria-describedby={undefined}>
                           <DialogHeader>
                             <DialogTitle>Edit User</DialogTitle>
                           </DialogHeader>
