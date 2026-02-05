@@ -30,7 +30,7 @@ export default function AttendanceRecords() {
       <DashboardSidebar userType="student" />
       
       <main className="flex-1 overflow-auto">
-        <div className="p-6 space-y-6">
+        <div className="container mx-auto p-6 space-y-6 max-w-7xl">
           <div className="flex justify-between items-start">
             <div>
               <h1 className="text-3xl font-bold text-primary">Attendance Records</h1>

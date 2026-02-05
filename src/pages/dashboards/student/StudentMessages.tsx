@@ -13,7 +13,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import DashboardSidebar from '@/components/DashboardSidebar';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/contexts/AuthContext';
@@ -264,9 +263,8 @@ export default function StudentMessages() {
   };
 
   return (
-    <div className="flex h-screen bg-background text-foreground">
-      <DashboardSidebar userType="student" />
-      <div className="flex flex-1">
+    <div className="flex flex-col h-[calc(100vh-theme(spacing.28))] bg-background text-foreground">
+      <div className="flex flex-1 overflow-hidden">
         <div className="w-20 border-r border-border/80 bg-muted/30 p-2 flex flex-col items-center space-y-4">
           <button
             onClick={() => setView('dms')}

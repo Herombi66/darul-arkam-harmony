@@ -31,7 +31,10 @@ export default function Login() {
     try {
       const res = await fetch(`${backendUrl}/api/auth/login`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
         // Send only identifier and password; backend auto-detects role
         body: JSON.stringify({ identifier, password }),
       });

@@ -8,7 +8,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import DashboardSidebar from '@/components/DashboardSidebar';
 import { FileText, Calendar, Clock, Upload, Eye, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -83,8 +82,12 @@ export default function StudentAssignments() {
       try {
         setLoading(true);
         setError(null);
-        const res = await fetch('/api/assignments', {
+        // Use environment variable for backend URL if available, otherwise fallback to relative path
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || '';
+        const res = await fetch(`${backendUrl}/api/student/assignments`, {
           headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
             Authorization: `Bearer ${token ?? ''}`,
           },
         });
@@ -154,6 +157,7 @@ export default function StudentAssignments() {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
+          'Accept': 'application/json',
         },
         body: JSON.stringify({
           files: [
@@ -191,39 +195,29 @@ export default function StudentAssignments() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex">
-        <DashboardSidebar userType="student" />
-        <main className="flex-1 overflow-y-auto">
-          <div className="container mx-auto p-6 max-w-6xl">
-            <h1 className="text-3xl font-bold text-foreground">Loading assignments...</h1>
-            <p className="text-muted-foreground">Please wait while we fetch your assignments.</p>
-          </div>
-        </main>
+      <div className="flex items-center justify-center h-full min-h-[50vh]">
+        <div className="text-center space-y-4">
+          <h1 className="text-3xl font-bold text-foreground">Loading assignments...</h1>
+          <p className="text-muted-foreground">Please wait while we fetch your assignments.</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-background flex">
-        <DashboardSidebar userType="student" />
-        <main className="flex-1 overflow-y-auto">
-          <div className="container mx-auto p-6 max-w-6xl">
-            <h1 className="text-3xl font-bold text-foreground">Assignments</h1>
-            <p className="text-red-600">{error}</p>
-          </div>
-        </main>
+      <div className="flex items-center justify-center h-full min-h-[50vh]">
+        <div className="text-center space-y-4">
+          <h1 className="text-3xl font-bold text-foreground">Assignments</h1>
+          <p className="text-red-600">{error}</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background flex">
-      <DashboardSidebar userType="student" />
-      
-      <main className="flex-1 overflow-y-auto">
-        <div className="container mx-auto p-6 max-w-6xl">
-          <div className="mb-6">
+    <div className="container mx-auto p-4 md:p-6 max-w-7xl space-y-8 animate-in fade-in duration-500">
+      <div className="mb-6">
             <h1 className="text-3xl font-bold text-foreground">My Assignments</h1>
             <p className="text-muted-foreground">Track and manage your academic assignments</p>
           </div>
@@ -516,8 +510,6 @@ export default function StudentAssignments() {
               ))}
             </TabsContent>
           </Tabs>
-        </div>
-      </main>
     </div>
   );
 }

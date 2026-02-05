@@ -8,20 +8,41 @@ import {
   Calendar,
   MessageSquare,
   HelpCircle,
-  ChevronLeft,
-  ChevronRight,
   LogOut,
   GraduationCap,
   Users,
   FileText,
   Clock,
   CalendarDays,
-  Grid3X3
+  ChevronRight,
+  ChevronDown,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import schoolLogo from '@/assets/school-logo.png';
 import { useAuth } from '@/contexts/AuthContext';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+  SidebarRail,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupContent,
+  SidebarSeparator,
+} from "@/components/ui/sidebar";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 interface SidebarItem {
   icon: any;
@@ -151,195 +172,114 @@ const sidebarItems = {
 };
 
 export default function DashboardSidebar({ userType }: DashboardSidebarProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
 
   const items = sidebarItems[userType] || sidebarItems.student;
 
-  const toggleExpanded = (href: string) => {
-    setExpandedItems(prev => 
-      prev.includes(href) 
-        ? prev.filter(item => item !== href)
-        : [...prev, href]
-    );
-  };
-
   const isActive = (href: string) => {
     return location.pathname === href || location.pathname.startsWith(href + '/');
   };
 
-  const isExpanded = (href: string) => {
-    return expandedItems.includes(href) || location.pathname.startsWith(href);
-  };
-
   return (
-    <>
-      <div className={cn(
-        "bg-primary text-primary-foreground transition-all duration-300 flex flex-col relative",
-        isCollapsed ? "w-0 overflow-hidden" : "w-64"
-      )}>
-        {/* Header */}
-        <div className="p-4 border-b border-primary-foreground/20">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <img src={schoolLogo} alt="School Logo" className="h-8 w-8" />
-              <div>
-                <h2 className="font-bold text-sm">Care and Support Academy</h2>
-                <p className="text-xs text-primary-foreground/70">Gombe State</p>
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsCollapsed(!isCollapsed)}
-              className="text-primary-foreground hover:bg-primary-foreground/10"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
+    <Sidebar collapsible="icon" variant="sidebar">
+      <SidebarHeader>
+        <div className="flex items-center gap-2 px-2 py-2">
+          <img src={schoolLogo} alt="School Logo" className="h-8 w-8 rounded-full" />
+          <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
+            <span className="truncate font-semibold">Care and Support</span>
+            <span className="truncate text-xs">Academy</span>
           </div>
         </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-4">
-          <div className="space-y-1 px-2">
-            {items.map((item, index) => {
-              const hasChildren = 'children' in item && item.children;
-              return (
-                <div key={index}>
-                  {hasChildren ? (
-                    <button
-                      onClick={() => toggleExpanded(item.href)}
-                      className={cn(
-                        "flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors w-full",
-                        "hover:bg-primary-foreground/10",
-                        isActive(item.href) && "bg-primary-foreground/20 text-white"
-                      )}
-                    >
-                      <item.icon className="h-5 w-5 mr-3" />
-                      <span className="flex-1 text-left">{item.label}</span>
-                      <ChevronRight className={cn(
-                        "h-4 w-4 transition-transform",
-                        isExpanded(item.href) && "rotate-90"
-                      )} />
-                    </button>
-                  ) : (
-                    <Link
-                      to={item.href}
-                      className={cn(
-                        "flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                        "hover:bg-primary-foreground/10",
-                        isActive(item.href) && "bg-primary-foreground/20 text-white"
-                      )}
-                    >
-                      <item.icon className="h-5 w-5 mr-3" />
-                      <span className="flex-1">{item.label}</span>
-                    </Link>
-                  )}
-
-                  {/* Sub-items */}
-                  {hasChildren && isExpanded(item.href) && (
-                    <div className="ml-6 mt-1 space-y-1">
-                      {(item as SidebarItem & { children: SidebarItem[] }).children.map((child, childIndex) => (
-                        <Link
-                          key={childIndex}
-                          to={child.href}
-                          className={cn(
-                            "flex items-center px-3 py-2 rounded-lg text-sm transition-colors",
-                            "hover:bg-primary-foreground/10",
-                            isActive(child.href) && "bg-primary-foreground/20 text-white"
-                          )}
-                        >
-                          <child.icon className="h-4 w-4 mr-3" />
-                          <span>{child.label}</span>
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </nav>
-
-        {/* Quick Stats & Actions for Admin */}
-        {userType === 'admin' && (
-          <div className="p-4 border-t border-primary-foreground/20 space-y-4">
-            {/* Quick Stats */}
-            <div className="space-y-2">
-              <p className="text-xs text-primary-foreground/70 font-medium">System Overview</p>
-              <div className="grid grid-cols-2 gap-2 text-center">
-                <div className="bg-primary-foreground/10 rounded p-2">
-                  <div className="text-lg font-bold text-primary-foreground">1.2K</div>
-                  <div className="text-xs text-primary-foreground/70">Users</div>
-                </div>
-                <div className="bg-primary-foreground/10 rounded p-2">
-                  <div className="text-lg font-bold text-primary-foreground">99.8%</div>
-                  <div className="text-xs text-primary-foreground/70">Uptime</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="space-y-2">
-              <p className="text-xs text-primary-foreground/70 font-medium">Quick Access</p>
-              <div className="grid grid-cols-2 gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-primary-foreground hover:bg-primary-foreground/10 h-8 text-xs"
-                  asChild
-                >
-                  <Link to="/dashboard/admin/profile">
-                    <User className="h-3 w-3 mr-1" />
-                    Profile
-                  </Link>
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-primary-foreground hover:bg-primary-foreground/10 h-8 text-xs"
-                  asChild
-                >
-                  <Link to="/dashboard/admin/users">
-                    <Users className="h-3 w-3 mr-1" />
-                    Users
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Logout */}
-        <div className="p-4 border-t border-primary-foreground/20">
-          <Button
-            variant="ghost"
-            className="w-full text-primary-foreground hover:bg-primary-foreground/10"
-            onClick={() => {
-              logout();
-              navigate('/login');
-            }}
-          >
-            <LogOut className="h-4 w-4 mr-2" />
-            Logout
-          </Button>
-        </div>
-      </div>
+      </SidebarHeader>
       
-      {/* Floating toggle button when collapsed */}
-      {isCollapsed && (
-        <Button
-          variant="default"
-          size="icon"
-          onClick={() => setIsCollapsed(false)}
-          className="fixed top-4 left-4 z-50 bg-primary hover:bg-primary/90 shadow-lg"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-      )}
-    </>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Menu</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {items.map((item, index) => (
+                <div key={index}>
+                  {'children' in item && item.children ? (
+                    <Collapsible defaultOpen={isActive(item.href)} className="group/collapsible">
+                      <SidebarMenuItem>
+                        <CollapsibleTrigger asChild>
+                          <SidebarMenuButton tooltip={item.label} isActive={isActive(item.href)}>
+                            <item.icon className="h-4 w-4" />
+                            <span>{item.label}</span>
+                            <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                          </SidebarMenuButton>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <SidebarMenuSub>
+                            {Array.isArray(item.children) && item.children.map((child, childIndex) => (
+                              <SidebarMenuSubItem key={childIndex}>
+                                <SidebarMenuSubButton asChild isActive={isActive(child.href)}>
+                                  <Link to={child.href}>
+                                    <child.icon className="h-4 w-4 mr-2" />
+                                    <span>{child.label}</span>
+                                  </Link>
+                                </SidebarMenuSubButton>
+                              </SidebarMenuSubItem>
+                            ))}
+                          </SidebarMenuSub>
+                        </CollapsibleContent>
+                      </SidebarMenuItem>
+                    </Collapsible>
+                  ) : (
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild isActive={isActive(item.href)} tooltip={item.label}>
+                        <Link to={item.href}>
+                          <item.icon className="h-4 w-4" />
+                          <span>{item.label}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )}
+                </div>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {userType === 'admin' && (
+          <SidebarGroup className="mt-auto group-data-[collapsible=icon]:hidden">
+            <SidebarSeparator className="mb-4" />
+            <SidebarGroupLabel>System Overview</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <div className="grid grid-cols-2 gap-2 p-2">
+                <div className="bg-muted/50 rounded p-2 text-center">
+                  <div className="text-lg font-bold text-primary">1.2K</div>
+                  <div className="text-xs text-muted-foreground">Users</div>
+                </div>
+                <div className="bg-muted/50 rounded p-2 text-center">
+                  <div className="text-lg font-bold text-primary">99.8%</div>
+                  <div className="text-xs text-muted-foreground">Uptime</div>
+                </div>
+              </div>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+      </SidebarContent>
+
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton 
+              onClick={() => {
+                logout();
+                navigate('/login');
+              }}
+              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+            >
+              <LogOut className="h-4 w-4" />
+              <span>Logout</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
+      <SidebarRail />
+    </Sidebar>
   );
 }

@@ -9,116 +9,169 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
+    /* 
+      Light Theme Palette
+      Concept: "Academic Day"
+      - Base: Clean white/off-white for paper-like feel
+      - Primary: Deep Navy Blue (Authority, Trust, Education)
+      - Secondary: Soft Sky Blue (Clarity, Openness)
+      - Accent: Vibrant Orange (Energy, Highlights)
+      - Text: Dark Slate (Readability without harsh black)
+    */
+    
     /* Base colors */
-    --background: 0 0% 100%;
-    --foreground: 102 94% 7%;
+    --background: 210 40% 98%; /* Soft cool white */
+    --foreground: 222 47% 11%; /* Dark Slate Blue */
 
     /* Card colors */
     --card: 0 0% 100%;
-    --card-foreground: 102 94% 7%;
+    --card-foreground: 222 47% 11%;
 
     /* Popover colors */
     --popover: 0 0% 100%;
-    --popover-foreground: 102 94% 7%;
+    --popover-foreground: 222 47% 11%;
 
-    /* Primary - Dark Navy */
-    --primary: 240 77% 15%;
-    --primary-foreground: 0 0% 100%;
-    --primary-hover: 240 77% 20%;
+    /* Primary - Deep Navy Blue */
+    --primary: 222 47% 11%;
+    --primary-foreground: 210 40% 98%;
+    --primary-hover: 222 47% 16%;
 
-    /* Secondary - Light Green */
-    --secondary: 106 74% 79%;
-    --secondary-foreground: 102 94% 7%;
-    --secondary-hover: 106 74% 84%;
+    /* Secondary - Soft Sky Blue */
+    --secondary: 199 89% 48%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-hover: 199 89% 53%;
 
-    /* Accent - Dark Green */
-    --accent: 102 94% 7%;
+    /* Accent - Vibrant Orange */
+    --accent: 24 95% 53%;
     --accent-foreground: 0 0% 100%;
-    --accent-hover: 102 94% 12%;
-
-    /* Warning/Highlight - Light Green */
-    --warning: 106 74% 79%;
-    --warning-foreground: 102 94% 7%;
+    --accent-hover: 24 95% 58%;
 
     /* Muted colors */
-    --muted: 106 74% 95%;
-    --muted-foreground: 102 94% 25%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
 
-    /* Success */
-    --success: 106 74% 79%;
-    --success-foreground: 102 94% 7%;
+    /* Success - Emerald Green */
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
 
-    /* Destructive */
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+    /* Destructive - Red */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    /* Warning - Amber */
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
 
     /* Border and input */
-    --border: 106 30% 90%;
-    --input: 106 30% 94%;
-    --ring: 240 77% 15%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222 47% 11%;
 
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
-    --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)), hsl(var(--accent)));
-    --gradient-accent: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--primary)));
-    --gradient-hero: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 50%, hsl(var(--accent)) 100%);
+    /* Sidebar - Light Theme Specific */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 222 47% 11%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 40% 96.1%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214.3 31.8% 91.4%;
+    --sidebar-ring: 222 47% 11%;
+
+    /* Gradients - Refined for Light Theme */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(222 47% 20%));
+    --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)), hsl(199 89% 60%));
+    --gradient-accent: linear-gradient(135deg, hsl(var(--accent)), hsl(24 95% 63%));
+    --gradient-hero: linear-gradient(135deg, hsl(222 47% 11%) 0%, hsl(199 89% 48%) 100%);
 
     /* Shadows */
-    --shadow-elevation: 0 10px 30px -10px hsl(240 77% 15% / 0.3);
-    --shadow-glow: 0 0 40px hsl(106 74% 79% / 0.4);
+    --shadow-elevation: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
+    --shadow-glow: 0 0 20px rgba(199, 143, 76, 0.15);
 
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
     --radius: 0.5rem;
-
-    --sidebar-background: 106 74% 95%;
-    --sidebar-foreground: 102 94% 7%;
-    --sidebar-primary: 240 77% 15%;
-    --sidebar-primary-foreground: 106 74% 79%;
-    --sidebar-accent: 106 74% 90%;
-    --sidebar-accent-foreground: 102 94% 7%;
-    --sidebar-border: 106 30% 85%;
-    --sidebar-ring: 106 74% 79%;
   }
 
   .dark {
-    --background: 102 94% 7%;
-    --foreground: 106 74% 79%;
+    /* 
+      Dark Theme Palette
+      Concept: "Midnight Study"
+      - Base: Rich Charcoal/Dark Slate (Not pure black, reduces eye strain)
+      - Primary: Lighter Slate Blue (Contrast against dark bg)
+      - Secondary: Cyan/Teal (Electric look)
+      - Accent: Amber/Gold (Warmth in the dark)
+      - Text: Off-white/Silver (Readability)
+    */
 
-    --card: 102 94% 7%;
-    --card-foreground: 106 74% 79%;
+    /* Base colors */
+    --background: 222 47% 11%; /* Deep Navy Background */
+    --foreground: 210 40% 98%; /* Soft White Text */
 
-    --popover: 102 94% 7%;
-    --popover-foreground: 106 74% 79%;
+    /* Card colors */
+    --card: 222 47% 14%; /* Slightly lighter than bg */
+    --card-foreground: 210 40% 98%;
 
-    --primary: 106 74% 79%;
-    --primary-foreground: 102 94% 7%;
+    /* Popover colors */
+    --popover: 222 47% 14%;
+    --popover-foreground: 210 40% 98%;
 
-    --secondary: 240 77% 15%;
-    --secondary-foreground: 106 74% 79%;
+    /* Primary - Lighter Slate Blue for contrast */
+    --primary: 210 40% 98%;
+    --primary-foreground: 222 47% 11%;
+    --primary-hover: 210 40% 90%;
 
-    --muted: 240 77% 15%;
-    --muted-foreground: 106 60% 70%;
+    /* Secondary - Electric Cyan */
+    --secondary: 199 89% 48%;
+    --secondary-foreground: 222 47% 11%;
+    --secondary-hover: 199 89% 53%;
 
-    --accent: 240 77% 15%;
-    --accent-foreground: 106 74% 79%;
+    /* Accent - Warm Amber */
+    --accent: 38 92% 50%;
+    --accent-foreground: 222 47% 11%;
+    --accent-hover: 38 92% 55%;
 
+    /* Muted colors */
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    /* Success */
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+
+    /* Destructive */
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 106 74% 79%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 240 77% 15%;
-    --input: 240 77% 15%;
-    --ring: 106 74% 79%;
-    --sidebar-background: 102 94% 7%;
-    --sidebar-foreground: 106 74% 79%;
-    --sidebar-primary: 240 77% 15%;
-    --sidebar-primary-foreground: 106 74% 79%;
-    --sidebar-accent: 240 77% 15%;
-    --sidebar-accent-foreground: 106 74% 79%;
-    --sidebar-border: 240 77% 15%;
-    --sidebar-ring: 106 74% 79%;
+    /* Warning */
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    /* Border and input */
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+
+    /* Sidebar - Dark Theme Specific */
+    --sidebar-background: 222 47% 11%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 199 89% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 217.2 32.6% 17.5%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217.2 32.6% 17.5%;
+    --sidebar-ring: 212.7 26.8% 83.9%;
+
+    /* Gradients - Refined for Dark Theme */
+    --gradient-primary: linear-gradient(135deg, hsl(222 47% 14%), hsl(222 47% 20%));
+    --gradient-secondary: linear-gradient(135deg, hsl(199 89% 48%), hsl(199 89% 38%));
+    --gradient-accent: linear-gradient(135deg, hsl(38 92% 50%), hsl(38 92% 40%));
+    --gradient-hero: linear-gradient(135deg, hsl(222 47% 11%) 0%, hsl(217 32% 17%) 100%);
+    
+    /* Shadows - Adjusted for Dark Mode */
+    --shadow-elevation: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+    --shadow-glow: 0 0 20px rgba(199, 143, 76, 0.25);
   }
 }
 

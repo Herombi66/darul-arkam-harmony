@@ -58,7 +58,7 @@ const StudentProfile = () => {
   };
 
   return (
-    <div className="p-4 sm:px-6 sm:py-0">
+    <div className="container mx-auto p-6 max-w-7xl">
       <Card>
         <CardHeader>
           <CardTitle>Student Profile</CardTitle>

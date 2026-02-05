@@ -78,9 +78,9 @@ export default function PaymentHistory() {
                     <TableHead>Date</TableHead>
                     <TableHead>Description</TableHead>
                     <TableHead>Method</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Action</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead className="text-center">Status</TableHead>
+                    <TableHead className="text-center">Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -90,13 +90,13 @@ export default function PaymentHistory() {
                       <TableCell>{payment.date}</TableCell>
                       <TableCell>{payment.description}</TableCell>
                       <TableCell>{payment.method}</TableCell>
-                      <TableCell>₦{payment.amount.toLocaleString()}</TableCell>
-                      <TableCell>
-                        <span className="px-2 py-1 rounded-full text-xs bg-success/20 text-success">
+                      <TableCell className="text-right">₦{payment.amount.toLocaleString()}</TableCell>
+                      <TableCell className="text-center">
+                        <span className="px-2 py-1 rounded-full text-xs bg-success/20 text-success inline-flex items-center justify-center">
                           {payment.status}
                         </span>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-center">
                         <Button variant="ghost" size="sm">
                           <Download className="h-4 w-4" />
                         </Button>

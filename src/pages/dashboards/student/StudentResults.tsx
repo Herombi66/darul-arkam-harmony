@@ -68,141 +68,25 @@ export default function StudentResults() {
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
   const [reportDialogData, setReportDialogData] = useState<any>(null);
   // Add missing auth and ref
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const reportRef = useRef<HTMLDivElement>(null);
 
-  // Mock data that matches the structure from TeacherRecordSheet
-  const mockCurrentResults = [
-    {
-      subject: 'Mathematics',
-      ca1: 25,
-      ca2: 28,
-      ca3: 26,
-      exam: 75,
-      total: 77,
-      grade: 'B+',
-      remark: 'Very Good'
-    },
-    {
-      subject: 'Physics',
-      ca1: 24,
-      ca2: 26,
-      ca3: 25,
-      exam: 72,
-      total: 74,
-      grade: 'B+',
-      remark: 'Very Good'
-    },
-    {
-      subject: 'Chemistry',
-      ca1: 22,
-      ca2: 24,
-      ca3: 23,
-      exam: 68,
-      total: 69,
-      grade: 'B',
-      remark: 'Good'
-    },
-    {
-      subject: 'Biology',
-      ca1: 26,
-      ca2: 27,
-      ca3: 28,
-      exam: 76,
-      total: 79,
-      grade: 'B+',
-      remark: 'Very Good'
-    },
-    {
-      subject: 'English',
-      ca1: 23,
-      ca2: 25,
-      ca3: 24,
-      exam: 70,
-      total: 71,
-      grade: 'B',
-      remark: 'Good'
-    },
-    {
-      subject: 'Geography',
-      ca1: 21,
-      ca2: 23,
-      ca3: 22,
-      exam: 65,
-      total: 66,
-      grade: 'B-',
-      remark: 'Satisfactory'
-    }
-  ];
-
-  const mockPreviousResults = [
-    {
-      subject: 'Mathematics',
-      ca1: 22,
-      ca2: 25,
-      ca3: 24,
-      exam: 70,
-      total: 71,
-      grade: 'B',
-      remark: 'Good'
-    },
-    {
-      subject: 'Physics',
-      ca1: 21,
-      ca2: 23,
-      ca3: 22,
-      exam: 68,
-      total: 67,
-      grade: 'B-',
-      remark: 'Satisfactory'
-    },
-    {
-      subject: 'Chemistry',
-      ca1: 20,
-      ca2: 22,
-      ca3: 21,
-      exam: 65,
-      total: 64,
-      grade: 'B-',
-      remark: 'Satisfactory'
-    },
-    {
-      subject: 'Biology',
-      ca1: 24,
-      ca2: 25,
-      ca3: 26,
-      exam: 73,
-      total: 75,
-      grade: 'B+',
-      remark: 'Very Good'
-    },
-    {
-      subject: 'English',
-      ca1: 21,
-      ca2: 23,
-      ca3: 22,
-      exam: 67,
-      total: 67,
-      grade: 'B-',
-      remark: 'Satisfactory'
-    },
-    {
-      subject: 'Geography',
-      ca1: 19,
-      ca2: 21,
-      ca3: 20,
-      exam: 62,
-      total: 61,
-      grade: 'C',
-      remark: 'Pass'
-    }
-  ];
+  // Use environment variable for backend URL if available, otherwise fallback to relative path
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || '';
 
   const fetchCurrentResults = async () => {
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setCurrentTermResults(mockCurrentResults);
+      const res = await fetch(`${backendUrl}/api/student/results/current`, {
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            Authorization: `Bearer ${token ?? ''}`,
+        },
+      });
+      if (!res.ok) throw new Error('Failed to fetch');
+      const json = await res.json();
+      const data = Array.isArray(json.data) ? json.data : (Array.isArray(json) ? json : []);
+      setCurrentTermResults(data);
     } catch (err) {
       setError('Failed to load current term results');
     }
@@ -210,9 +94,17 @@ export default function StudentResults() {
 
   const fetchPreviousResults = async () => {
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-      setPreviousTermResults(mockPreviousResults);
+      const res = await fetch(`${backendUrl}/api/student/results/previous`, {
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            Authorization: `Bearer ${token ?? ''}`,
+        },
+      });
+      if (!res.ok) throw new Error('Failed to fetch');
+      const json = await res.json();
+      const data = Array.isArray(json.data) ? json.data : (Array.isArray(json) ? json : []);
+      setPreviousTermResults(data);
     } catch (err) {
       setError('Failed to load previous term results');
     }
@@ -359,7 +251,7 @@ export default function StudentResults() {
       <DashboardSidebar userType="student" />
 
       <main className="flex-1 overflow-y-auto">
-        <div className="container mx-auto p-6 max-w-6xl">
+        <div className="container mx-auto p-4 md:p-6 max-w-7xl">
           <div className="mb-6">
             <h1 className="text-3xl font-bold text-foreground">My Results</h1>
             <p className="text-muted-foreground">Track your academic performance and progress</p>
@@ -446,6 +338,7 @@ export default function StudentResults() {
                           <TableHead className="text-center">Exam (70)</TableHead>
                           <TableHead className="text-center">Total (100)</TableHead>
                           <TableHead className="text-center">Grade</TableHead>
+                          <TableHead className="text-center">Status</TableHead>
                           <TableHead>Remark</TableHead>
                         </TableRow>
                       </TableHeader>

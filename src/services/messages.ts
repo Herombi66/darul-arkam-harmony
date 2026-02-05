@@ -29,7 +29,11 @@ class ServiceError extends Error {
 
 async function requestJson(url: string, init?: RequestInit) {
   try {
-    const res = await fetch(url, init)
+    const headers = {
+      'Accept': 'application/json',
+      ...(init?.headers || {})
+    };
+    const res = await fetch(url, { ...init, headers })
     let data: unknown = null
     try {
       data = await res.json()
